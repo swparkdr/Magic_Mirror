@@ -56,13 +56,18 @@ def page_why_here():
     candidates = df.sample(4)
 
     for _, row in candidates.iterrows():
+        cleaned_story = row['story'].replace("사람", row['name'])
         label = f"""**{row['name']}** : {row['intro']}  
-{row['story']}"""
-        if st.button(label):
+        {cleaned_story}"""
+        ""
+        if st.button(label, key=row['name']):
             st.session_state.reason_name = row["name"]
-            st.session_state.reason_story = row["story"]
+            st.session_state.reason_story = row["story"].replace("사람", row["name"])
             st.session_state.selected_reason_tags = get_random_tags(row["tags"])
             st.session_state.page = "emotion_input"
+            st.experimental_rerun()
+            st.markdown("---")
+        if st.button("🔁 다른 이야기 보기"):
             st.experimental_rerun()
 
     st.markdown("---")
