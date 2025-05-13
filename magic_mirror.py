@@ -71,8 +71,14 @@ def page_emotion_report():
     x, y = st.session_state.emotion["x"], st.session_state.emotion["y"]
     st.write(f"너는 감정적으로 x={x}, y={y}인 위치에 있어.")
     st.write("아래 태그들 중에서 너를 가장 잘 설명하는 단어들을 선택해줘.")
-    tag_options = random.sample(emotion_tags_pool, 20)
-    selected = st.multiselect("당신에게 해당되는 단어를 골라줘", tag_options)
+    # 태그 옵션은 한 번만 생성해서 고정
+    if "tag_options" not in st.session_state:
+        st.session_state.tag_options = random.sample(emotion_tags_pool, 20)
+        selected = st.multiselect(
+        "당신에게 해당되는 단어를 골라줘",
+        st.session_state.tag_options,
+        default=st.session_state.selected_tags
+    )
     st.session_state.selected_tags = selected
     if st.button("추천 결과 보기"):
         go_to("recommendation")
@@ -82,7 +88,7 @@ def page_emotion_report():
 def page_recommendation():
     st.markdown("## 당신과 감정적으로 닮은 사람들")
     user_tags = set(st.session_state.selected_tags)
-    df = pd.read_csv("personas_40_full.csv")
+    df = pd.read_csv("personas.csv")
     recommendations = []
     for _, row in df.iterrows():
         persona_tags = set(str(row["tags"]).split(", "))
@@ -116,3 +122,4 @@ elif page == "emotion_report":
     page_emotion_report()
 elif page == "recommendation":
     page_recommendation()
+
