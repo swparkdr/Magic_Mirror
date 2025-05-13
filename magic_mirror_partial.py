@@ -3,9 +3,10 @@ import pandas as pd
 import random
 import re
 
+# ✅ 앱 초기 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# 상태 초기화
+# ✅ 세션 상태 초기화
 if "page" not in st.session_state:
     st.session_state.page = "name_input"
 if "user_name" not in st.session_state:
@@ -30,6 +31,7 @@ if "candidates" not in st.session_state:
     df = pd.read_csv("personas_40_full.csv")
     st.session_state.candidates = df.sample(4).to_dict("records")
 
+# ✅ 감정 좌표 기반 추천 태그 함수
 def get_tags_from_emotion(x, y):
     if x <= 3 and y <= 3:
         return ["신중함", "감정 절제", "분석적", "객관적", "침착함"]
@@ -42,10 +44,10 @@ def get_tags_from_emotion(x, y):
     else:
         return ["균형감", "성찰", "유연함", "현실적", "자기통제"]
 
-# 페이지 1
+# ✅ 페이지 1
 def page_name_input():
     st.markdown("### 안녕? 너는 이름이 뭐야?")
-    name = st.text_input("이름", value=st.session_state.user_name)
+    name = st.text_input("이름", value=st.session_state.get("user_name", ""))
     gender = st.radio("성별을 선택해줘", ["남성", "여성"], index=0)
 
     if name.strip():
@@ -57,11 +59,10 @@ def page_name_input():
             st.session_state.page = "why_here"
             st.experimental_rerun()
 
-# 페이지 2
+# ✅ 페이지 2
 def page_why_here():
     st.markdown(f"## {st.session_state.user_name}, 나를 왜 찾았어?")
-    st.markdown("아래 사람들 중에서 가장 공감되는 이야기를 골라줄 수 있을까?")
-    selected_name = None
+    st.markdown("아래 사람들 중에서 가장 공감되는 이야기를 골라줘.")
 
     for row in st.session_state.candidates:
         story = re.sub(r"사람\\d+", row["name"], row["story"])
@@ -76,16 +77,15 @@ def page_why_here():
             st.experimental_rerun()
 
     st.markdown("---")
-    if st.button("🔁 다른 스토리 볼래요"):
+    if st.button("🔁 다른 이야기 보기"):
         df = pd.read_csv("personas_40_full.csv")
         st.session_state.candidates = df.sample(4).to_dict("records")
         st.experimental_rerun()
 
-# 페이지 3
+# ✅ 페이지 3
 def page_emotion_input():
     st.markdown("### 너에 대해 조금 더 알려줘!")
 
-    # 감정 좌표 설명 추가
     st.markdown("#### 왜 감정 좌표를 묻는 걸까?")
     st.markdown("""
 사람의 감정은 단순히 "기분"이나 "성격"으로 나뉘지 않아.  
@@ -108,12 +108,10 @@ def page_emotion_input():
 지금의 너는 어디쯤에 있을까?
 """)
 
-    # 좌표 입력
     x = st.slider("자기표현 정도 (X축)", 1, 9, st.session_state.emotion["x"])
     y = st.slider("감정 방향성 (Y축)", 1, 9, st.session_state.emotion["y"])
     st.session_state.emotion = {"x": x, "y": y}
 
-    # 태그 추천 및 선택
     recommended = get_tags_from_emotion(x, y)
     tag_df = pd.read_csv("tag_descriptions.csv")
     all_tags = sorted(tag_df["tag"].unique().tolist())
@@ -128,7 +126,6 @@ def page_emotion_input():
     if st.button("다음으로"):
         st.session_state.page = "orientation"
         st.experimental_rerun()
-
 # 페이지 4
 def page_orientation():
     st.markdown("### 그런데 먼저 물어보고 싶은 게 있어.")
