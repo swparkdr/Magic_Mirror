@@ -118,19 +118,15 @@ def page_emotion_input():
 
     st.session_state.emotion = {"x": x, "y": y}
 
-    # 좌표 기반 추천 태그
-    recommended = get_tags_from_emotion(x, y)
+    # 전체 태그 목록 로드
     tag_df = pd.read_csv("tag_descriptions.csv")
     all_tags = sorted(tag_df["tag"].unique().tolist())
+    recommended = [tag for tag in get_tags_from_emotion(x, y) if tag in all_tags]
 
-    # 추천 태그는 보여주기만
-    st.markdown("#### 📌 현재 추천 태그")
-    st.markdown(f"`{'`, `'.join(recommended)}`")
-
-    # 사용자 선택 태그는 자유롭게
     selected = st.multiselect(
         "👇 너를 가장 잘 표현하는 태그를 골라줘",
-        all_tags
+        all_tags,
+        default=recommended
     )
 
     if selected:
@@ -139,7 +135,6 @@ def page_emotion_input():
     if st.button("다음으로"):
         st.session_state.page = "orientation"
         st.experimental_rerun()
-
 
 # 페이지 4
 def page_orientation():
