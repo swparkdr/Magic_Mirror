@@ -78,10 +78,14 @@ def page_emotion_report():
     if not st.session_state.tag_options:
         st.session_state.tag_options = random.sample(emotion_tags_pool, 20)
 
+with st.container():
+    st.markdown(" ")
     selected = st.multiselect(
-        "당신에게 해당되는 단어를 골라줘",
+        "👇 아래에서 여러 개 골라줘!",
         st.session_state.tag_options,
-        default=st.session_state.selected_tags
+        default=st.session_state.selected_tags,
+        placeholder="해당되는 단어를 클릭해 선택해줘!",
+        key="tag_selector"
     )
     st.session_state.selected_tags = selected
 
