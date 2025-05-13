@@ -81,18 +81,47 @@ def page_why_here():
 # 페이지 3
 def page_emotion_input():
     st.markdown("### 너에 대해 조금 더 알려줘!")
+
+    # 감정 좌표 설명 추가
+    st.markdown("#### 왜 감정 좌표를 묻는 걸까?")
+    st.markdown("""
+사람의 감정은 단순히 "기분"이나 "성격"으로 나뉘지 않아.  
+우리는 감정을 어떻게 표현하고, 어떤 방향으로 흐르게 하느냐에 따라  
+삶을 경험하고, 사람을 이해하게 되지.
+
+이 좌표는 두 가지 축으로 구성돼 있어:
+
+- **X축은 자기표현의 정도**야.  
+  감정을 밖으로 얼마나 드러내는지, 사람들과 어떻게 연결되는지를 말해.
+
+- **Y축은 감정의 방향성**이야.  
+  너의 감정이 이성적으로 흐르는지, 감성적으로 반응하는지를 나타내지.
+
+이 좌표는 너를 한 문장으로 규정하려는 게 아니야.  
+오히려 지금 이 순간의 너,  
+그리고 관계 속에서 너의 감정이 어떤 결을 가지고 있는지를  
+함께 바라보는 시작점이야.
+
+지금의 너는 어디쯤에 있을까?
+""")
+
+    # 좌표 입력
     x = st.slider("자기표현 정도 (X축)", 1, 9, st.session_state.emotion["x"])
     y = st.slider("감정 방향성 (Y축)", 1, 9, st.session_state.emotion["y"])
     st.session_state.emotion = {"x": x, "y": y}
 
+    # 태그 추천 및 선택
     recommended = get_tags_from_emotion(x, y)
     tag_df = pd.read_csv("tag_descriptions.csv")
     all_tags = sorted(tag_df["tag"].unique().tolist())
+    valid_defaults = [tag for tag in recommended if tag in all_tags]
 
     st.markdown("#### 추천된 감정 태그:")
-    selected = st.multiselect("👇 너를 가장 잘 표현하는 태그를 골라줘", all_tags, default=recommended)
+    selected = st.multiselect("👇 너를 가장 잘 표현하는 태그를 골라줘", all_tags, default=valid_defaults)
+
     if selected:
         st.session_state.final_tags = selected
+
     if st.button("다음으로"):
         st.session_state.page = "orientation"
         st.experimental_rerun()
