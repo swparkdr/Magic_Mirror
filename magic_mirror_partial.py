@@ -107,37 +107,30 @@ def page_emotion_input():
 
 지금의 너는 어디쯤에 있을까?
 """)
-    
+
     st.markdown("#### 자기표현 정도 (X축)")
     st.markdown("1 = 내향적 / 9 = 외향적")
     x = st.slider("X축", 1, 9, st.session_state.emotion["x"])
-    
+
     st.markdown("#### 감정 방향성 (Y축)")
     st.markdown("1 = 이성적 / 9 = 감성적")
     y = st.slider("Y축", 1, 9, st.session_state.emotion["y"])
-    
+
     st.session_state.emotion = {"x": x, "y": y}
 
-    # 감정 좌표 기반 추천 태그 자동 계산
+    # 좌표 기반 추천 태그
     recommended = get_tags_from_emotion(x, y)
-
-    # 전체 태그 목록 로드
     tag_df = pd.read_csv("tag_descriptions.csv")
     all_tags = sorted(tag_df["tag"].unique().tolist())
-    
-    # 기본값은 좌표 기반 추천 태그
-    default_selection = [tag for tag in recommended if tag in all_tags]
-    
-    # 추천 태그는 보여만 주기
+
+    # 추천 태그는 보여주기만
     st.markdown("#### 📌 현재 추천 태그")
     st.markdown(f"`{'`, `'.join(recommended)}`")
-    
+
     # 사용자 선택 태그는 자유롭게
-       # 사용자 선택 태그는 자유롭게
     selected = st.multiselect(
         "👇 너를 가장 잘 표현하는 태그를 골라줘",
-        all_tags,
-        default=default_selection if not st.session_state.final_tags else st.session_state.final_tags
+        all_tags
     )
 
     if selected:
@@ -146,6 +139,7 @@ def page_emotion_input():
     if st.button("다음으로"):
         st.session_state.page = "orientation"
         st.experimental_rerun()
+
 
 # 페이지 4
 def page_orientation():
