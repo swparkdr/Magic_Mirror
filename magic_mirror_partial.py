@@ -35,7 +35,7 @@ def page_name_input():
     """)
     name = st.text_input("너의 이름은?", value=st.session_state.user_name)
     if name.strip():
-    st.session_state.user_name = name.strip()
+       st.session_state.user_name = name.strip()
 
     if st.button("다음으로"):
     if st.session_state.user_name:
