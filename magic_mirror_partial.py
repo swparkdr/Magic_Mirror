@@ -26,6 +26,9 @@ if "final_tags" not in st.session_state:
     st.session_state.final_tags = []
 if "recommend_index" not in st.session_state:
     st.session_state.recommend_index = 0
+if "candidates" not in st.session_state:
+    df = pd.read_csv("personas_40_full.csv")
+    st.session_state.candidates = df.sample(4).to_dict("records")
 
 def get_tags_from_emotion(x, y):
     if x <= 3 and y <= 3:
@@ -51,35 +54,28 @@ def page_name_input():
         st.session_state.page = "why_here"
         st.experimental_rerun()
 
-# 페이지 2 (개선됨)
+# 페이지 2
 def page_why_here():
     st.markdown(f"## {st.session_state.user_name}, 나를 왜 찾았어?")
-    st.markdown("다음 중 가장 이입되는 사람의 이야기를 골라줄 수 있을까?")
-    df = pd.read_csv("personas_40_full.csv")
-    candidates = df.sample(4)
-
+    st.markdown("아래 사람들 중에서 가장 공감되는 이야기를 골라줄 수 있을까?")
     selected_name = None
-    selected_story = None
-    selected_tags = None
 
-    for _, row in candidates.iterrows():
+    for row in st.session_state.candidates:
         story = re.sub(r"사람\\d+", row["name"], row["story"])
-        label = f"""**{row['name']}** : {row['intro']}  
-{story}"""
-        if st.button(label, key=row["name"]):
-            selected_name = row["name"]
-            selected_story = story
-            selected_tags = random.sample(row["tags"].split(", "), 4)
-
-    if selected_name:
-        st.session_state.reason_name = selected_name
-        st.session_state.reason_story = selected_story
-        st.session_state.selected_reason_tags = selected_tags
-        st.session_state.page = "emotion_input"
-        st.experimental_rerun()
+        st.markdown(f"### {row['name']}")
+        st.markdown(f"**{row['intro']}**")
+        st.markdown(story)
+        if st.button(f"👉 이 사람이 가장 공감되요 ({row['name']})", key=row["name"]):
+            st.session_state.reason_name = row["name"]
+            st.session_state.reason_story = story
+            st.session_state.selected_reason_tags = random.sample(row["tags"].split(", "), 4)
+            st.session_state.page = "emotion_input"
+            st.experimental_rerun()
 
     st.markdown("---")
-    if st.button("🔁 다른 이야기 보기", key="reshuffle"):
+    if st.button("🔁 다른 스토리 볼래요"):
+        df = pd.read_csv("personas_40_full.csv")
+        st.session_state.candidates = df.sample(4).to_dict("records")
         st.experimental_rerun()
 
 # 페이지 3
@@ -88,9 +84,13 @@ def page_emotion_input():
     x = st.slider("자기표현 정도 (X축)", 1, 9, st.session_state.emotion["x"])
     y = st.slider("감정 방향성 (Y축)", 1, 9, st.session_state.emotion["y"])
     st.session_state.emotion = {"x": x, "y": y}
+
     recommended = get_tags_from_emotion(x, y)
+    tag_df = pd.read_csv("tag_descriptions.csv")
+    all_tags = sorted(tag_df["tag"].unique().tolist())
+
     st.markdown("#### 추천된 감정 태그:")
-    selected = st.multiselect("너를 가장 잘 표현하는 태그를 골라줘", recommended, default=recommended)
+    selected = st.multiselect("👇 너를 가장 잘 표현하는 태그를 골라줘", all_tags, default=recommended)
     if selected:
         st.session_state.final_tags = selected
     if st.button("다음으로"):
@@ -147,7 +147,7 @@ def page_recommendation():
         st.session_state.recommend_index += 1
         st.experimental_rerun()
 
-# 페이지 라우팅
+# 라우팅
 if st.session_state.page == "name_input":
     page_name_input()
 elif st.session_state.page == "why_here":
