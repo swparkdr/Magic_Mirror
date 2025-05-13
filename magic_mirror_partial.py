@@ -54,8 +54,8 @@ def page_why_here():
     candidates = df.sample(4)
 
     for _, row in candidates.iterrows():
-        label = f"**{row['name']}** : {row['intro']}  
-{row['story']}"
+        label = f"""**{row['name']}** : {row['intro']}  
+{row['story']}"""
         if st.button(label):
             st.session_state.reason_name = row["name"]
             st.session_state.reason_story = row["story"]
