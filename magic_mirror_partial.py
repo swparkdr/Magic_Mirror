@@ -133,18 +133,20 @@ def page_emotion_input():
     st.markdown(f"`{'`, `'.join(recommended)}`")
     
     # 사용자 선택 태그는 자유롭게
+       # 사용자 선택 태그는 자유롭게
     selected = st.multiselect(
-    "👇 너를 가장 잘 표현하는 태그를 골라줘",
-    all_tags,
-    default=default_selection if not st.session_state.final_tags else st.session_state.final_tags
-)
+        "👇 너를 가장 잘 표현하는 태그를 골라줘",
+        all_tags,
+        default=default_selection if not st.session_state.final_tags else st.session_state.final_tags
+    )
 
-if selected:
-    st.session_state.final_tags = selected
+    if selected:
+        st.session_state.final_tags = selected
 
     if st.button("다음으로"):
         st.session_state.page = "orientation"
         st.experimental_rerun()
+
 # 페이지 4
 def page_orientation():
     st.markdown("### 그런데 먼저 물어보고 싶은 게 있어.")
