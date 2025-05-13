@@ -47,12 +47,15 @@ def page_name_input():
     st.markdown("### 안녕? 너는 이름이 뭐야?")
     name = st.text_input("이름", value=st.session_state.user_name)
     gender = st.radio("성별을 선택해줘", ["남성", "여성"], index=0)
+
     if name.strip():
         st.session_state.user_name = name.strip()
         st.session_state.user_gender = gender
+
     if st.button("다음으로"):
-        st.session_state.page = "why_here"
-        st.experimental_rerun()
+        if st.session_state.user_name and st.session_state.user_gender:
+            st.session_state.page = "why_here"
+            st.experimental_rerun()
 
 # 페이지 2
 def page_why_here():
