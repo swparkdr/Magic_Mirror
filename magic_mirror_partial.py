@@ -6,7 +6,7 @@ import pandas as pd
 # 1) 기본 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# 2) 아주 간단한 CSS(배경색·버튼 컬러만)
+# 2) 매우 간단한 CSS
 st.markdown("""
 <style>
 body            {background:#F9F5F0; font-family:'Noto Sans KR',sans-serif; color:#333;}
@@ -28,9 +28,8 @@ if not os.path.exists("personas_40_full.csv"):
     }).to_csv("personas_40_full.csv", index=False)
 
 if not os.path.exists("tag_descriptions.csv"):
-    pd.DataFrame({"tag": ["성찰","유연함","현실적","자기통제","균형감"]}).to_csv(
-        "tag_descriptions.csv", index=False
-    )
+    pd.DataFrame({"tag": ["성찰","유연함","현실적","자기통제","균형감"]}
+                 ).to_csv("tag_descriptions.csv", index=False)
 
 df_persona = pd.read_csv("personas_40_full.csv")
 all_tags = sorted(pd.read_csv("tag_descriptions.csv")["tag"].unique().tolist())
@@ -80,15 +79,35 @@ def page_name():
 
 def page_encourage():
     st.header("작은 용기의 순간")
-    st.markdown("""
+    uname = st.session_state.user_name or "친구"
+    st.markdown(f"""
 관계를 맺는 일은 언제나 작은 용기가 필요해요.  
 당신이 이름을 적으며 내민 그 손길은 이미 충분히 소중합니다.  
 우리는 모두 행복할 자격이 있고, 당신 역시 누군가에게 반짝이는 존재예요.  
-우리 사실 모두 동화를 꿈꾸잖아요. 현실이 동화같을 수만은 없겠지만,  
+
+우리 사실 모두 동화를 꿈꾼다. 현실이 동화같을 수만은 없겠지만,  
 **당신에게도 그런 동화 같은 인연의 시작이 될 수 있기를 바라며.**
+
+{uname}, 사람들과 관계를 맺을 준비가 됐어?  
+아직 마음의 준비가 안 된 것 같다면,  
+아직 나를 잘 모르겠다면,  
+너무 급할 필요 없어!
 """)
-    if st.button("계속"):
-        st.session_state.page="why"
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("✅ 준비가 됐어. 시작해볼까"):
+            st.session_state.page="why"
+            st.experimental_rerun()
+    with col2:
+        if st.button("❓ 잘 모르겠어. 어떻게 하면 좋을까?"):
+            st.session_state.page="explore"
+            st.experimental_rerun()
+
+def page_explore():
+    st.header("스스로 탐구 (개발 중)")
+    st.write("곧 당신이 자신의 감정을 더 깊이 살펴볼 수 있는 기능이 들어올 거예요.")
+    if st.button("돌아가기"):
+        st.session_state.page="encourage"
         st.experimental_rerun()
 
 def page_why():
@@ -138,7 +157,8 @@ def page_recommend():
 pages = {
     "landing":    landing,
     "name":       page_name,
-    "encourage":  page_encourage,      # 🆕 추가
+    "encourage":  page_encourage,
+    "explore":    page_explore,   # 🆕
     "why":        page_why,
     "emotion":    page_emotion,
     "recommend":  page_recommend,
