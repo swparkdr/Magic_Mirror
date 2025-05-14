@@ -1,216 +1,154 @@
+# ───────────────────── magic_mirror_app.py ─────────────────────
+import os, pathlib, random, re, textwrap
 import streamlit as st
 import pandas as pd
-import random
-import re
 
-# ✅ 전체 스타일 적용
+# 0) 전역 테마 (없으면 한 번만 생성)
+THEME = """
+[theme]
+base  = "light"
+primaryColor             = "#6C63FF"
+secondaryBackgroundColor = "#F9F5F0"
+textColor                = "#333333"
+font  = "serif"
+"""
+pathlib.Path(".streamlit").mkdir(exist_ok=True)
+cfg = pathlib.Path(".streamlit/config.toml")
+if not cfg.exists():
+    cfg.write_text(THEME.strip())
+
+# 1) CSS 인젝션
 st.markdown("""
 <style>
-body {
-    background-color: #F9F5F0;
-    font-family: 'Noto Sans KR', sans-serif;
-    color: #333333;
+body            {background:#F9F5F0;font-family:'Noto Sans KR',sans-serif;color:#333;}
+h1,h2,h3         {color:#6C63FF;font-weight:600;}
+/* 최신 클래스 셀렉터 */
+button[data-baseweb="button"] {
+    background:#6C63FF!important;color:#fff;border-radius:8px;
 }
-h1, h2, h3 {
-    color: #6C63FF;
-    font-weight: 600;
-}
-button[kind="primary"] {
-    background-color: #6C63FF;
-    color: white;
-    border-radius: 8px;
-}
-button[kind="primary"]:hover {
-    background-color: #DAD3FF;
-    color: #333;
+button[data-baseweb="button"]:hover{
+    background:#DAD3FF!important;color:#333;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ✅ 앱 기본 설정
+# 2) 기본 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# ✅ 공통 헤더 렌더링
-def render_header(title):
-    st.markdown(f"<h1 style='text-align: center;'>✨ Magic Mirror</h1>", unsafe_allow_html=True)
-    st.markdown(f"<h3 style='text-align: center;'>{title}</h3>", unsafe_allow_html=True)
+# 3‑A) CSV 로드 (없으면 더미 생성)
+persona_path = "personas_40_full.csv"
+tags_path    = "tag_descriptions.csv"
+
+if not os.path.exists(persona_path):
+    demo = pd.DataFrame({
+        "id": range(1, 41),
+        "name": [f"사람{i}" for i in range(1, 41)],
+        "story": ["당신과 비슷한 이야기를 가진 사람입니다."]*40,
+        "intro": ["짧은 소개"]*40,
+        "tags": ["성찰, 유연함, 현실적, 자기통제"]*40,
+        "gender": ["남성" if i%2 else "여성" for i in range(40)],
+    })
+    demo.to_csv(persona_path, index=False)
+
+if not os.path.exists(tags_path):
+    pd.DataFrame({"tag": ["성찰","유연함","현실적","자기통제","균형감"]}).to_csv(tags_path, index=False)
+
+df_persona = pd.read_csv(persona_path)
+df_tags    = pd.read_csv(tags_path)
+
+# 3‑B) 세션 변수 초기화
+default_state = dict(
+    page="name_input", user_name="", user_gender="남성", preference="",
+    reason_name="", reason_story="", selected_reason_tags=[],
+    emotion=dict(x=5,y=5), final_tags=[], recommend_index=0,
+    candidates=df_persona.sample(4).to_dict("records"),
+)
+for k,v in default_state.items():
+    st.session_state.setdefault(k,v)
+
+# 4) 공통 헤더
+def header(sub):
+    st.markdown("<h1 style='text-align:center;'>✨ Magic Mirror</h1>",unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center;'>{sub}</h3>",unsafe_allow_html=True)
     st.markdown("---")
 
-# ✅ 세션 상태 초기화
-if "page" not in st.session_state:
-    st.session_state.page = "name_input"
-if "user_name" not in st.session_state:
-    st.session_state.user_name = ""
-if "user_gender" not in st.session_state:
-    st.session_state.user_gender = ""
-if "preference" not in st.session_state:
-    st.session_state.preference = ""
-if "reason_name" not in st.session_state:
-    st.session_state.reason_name = ""
-if "reason_story" not in st.session_state:
-    st.session_state.reason_story = ""
-if "selected_reason_tags" not in st.session_state:
-    st.session_state.selected_reason_tags = []
-if "emotion" not in st.session_state:
-    st.session_state.emotion = {"x": 5, "y": 5}
-if "final_tags" not in st.session_state:
-    st.session_state.final_tags = []
-if "recommend_index" not in st.session_state:
-    st.session_state.recommend_index = 0
-if "candidates" not in st.session_state:
-    df = pd.read_csv("personas_40_full.csv")
-    st.session_state.candidates = df.sample(4).to_dict("records")
+# 5‑A) 유틸
+all_tags = sorted(df_tags["tag"].unique().tolist())
+def rec_tags(x,y):
+    if x<=3 and y<=3:   return ["신중함","감정 절제","분석적","객관적","침착함"]
+    if x>=7 and y>=7:   return ["외향적","공감","유쾌함","에너지","감성적"]
+    if x<=3 and y>=7:   return ["내성적","섬세함","조율자","감정이입","사려 깊음"]
+    if x>=7 and y<=3:   return ["직진형","열정","추진력","감정 표현","감정적"]
+    return ["균형감","성찰","유연함","현실적","자기통제"]
 
-def get_tags_from_emotion(x, y):
-    if x <= 3 and y <= 3:
-        return ["신중함", "감정 절제", "분석적", "객관적", "침착함"]
-    elif x >= 7 and y >= 7:
-        return ["외향적", "공감", "유쾌함", "에너지", "감성적"]
-    elif x <= 3 and y >= 7:
-        return ["내성적", "섬세함", "조율자", "감정이입", "사려 깊음"]
-    elif x >= 7 and y <= 3:
-        return ["직진형", "열정", "추진력", "감정 표현", "감정적"]
-    else:
-        return ["균형감", "성찰", "유연함", "현실적", "자기통제"]
-
-def page_name_input():
-    render_header("너는 누구니?")
-    name = st.text_input("이름", value=st.session_state.get("user_name", ""))
-    gender = st.radio("성별을 선택해줘", ["남성", "여성"], index=0)
-
-    if name.strip():
-        st.session_state.user_name = name.strip()
-        st.session_state.user_gender = gender
-
+# 5‑B) 페이지들
+def page_name():
+    header("너는 누구니?")
+    name = st.text_input("이름", st.session_state.user_name)
+    gender = st.radio("성별", ["남성","여성"], index=("남성","여성").index(st.session_state.user_gender))
     if st.button("다음으로"):
-        if st.session_state.user_name and st.session_state.user_gender:
-            st.session_state.page = "why_here"
-            st.experimental_rerun()
+        if name.strip():
+            st.session_state.user_name, st.session_state.user_gender = name.strip(), gender
+            st.session_state.page = "why_here"; st.experimental_rerun()
 
-def page_why_here():
-    render_header(f"{st.session_state.user_name}, 나를 왜 찾았어?")
+def page_why():
+    header(f"{st.session_state.user_name}, 나를 왜 찾았어?")
     for row in st.session_state.candidates:
         story = re.sub(r"사람\\d+", row["name"], row["story"])
-        st.markdown(f"### {row['name']}")
-        st.markdown(f"**{row['intro']}**")
-        st.markdown(story)
+        st.markdown(f"#### {row['name']}")
+        st.write(f"**{row['intro']}**"); st.write(story)
         if st.button(f"👉 이 사람이 가장 공감되요 ({row['name']})", key=row["name"]):
-            st.session_state.reason_name = row["name"]
-            st.session_state.reason_story = story
-            st.session_state.selected_reason_tags = random.sample(row["tags"].split(", "), 4)
-            st.session_state.page = "emotion_input"
-            st.experimental_rerun()
-
+            st.session_state.update(reason_name=row["name"], reason_story=story,
+                                    selected_reason_tags=random.sample(row["tags"].split(", "),4),
+                                    page="emotion_input"); st.experimental_rerun()
     st.markdown("---")
     if st.button("🔁 다른 이야기 보기"):
-        df = pd.read_csv("personas_40_full.csv")
-        st.session_state.candidates = df.sample(4).to_dict("records")
-        st.experimental_rerun()
+        st.session_state.candidates = df_persona.sample(4).to_dict("records"); st.experimental_rerun()
 
-def page_emotion_input():
-    render_header("너의 감정을 좌표로 그려볼까?")
-
-    st.markdown("#### 왜 감정 좌표를 묻는 걸까?")
-    st.markdown("""
-사람의 감정은 단순히 "기분"이나 "성격"으로 나뉘지 않아.  
-우리는 감정을 어떻게 표현하고, 어떤 방향으로 흐르게 하느냐에 따라  
-삶을 경험하고, 사람을 이해하게 되지.
-
-이 좌표는 두 가지 축으로 구성돼 있어:
-
-- **X축은 자기표현의 정도**야.  
-  감정을 밖으로 얼마나 드러내는지, 사람들과 어떻게 연결되는지를 말해.
-
-- **Y축은 감정의 방향성**이야.  
-  너의 감정이 이성적으로 흐르는지, 감성적으로 반응하는지를 나타내지.
-
-지금의 너는 어디쯤에 있을까?
-""")
-
-    st.markdown("#### 자기표현 정도 (X축)")
-    st.markdown("1 = 내향적 / 9 = 외향적")
-    x = st.slider("X축", 1, 9, st.session_state.emotion["x"])
-
-    st.markdown("#### 감정 방향성 (Y축)")
-    st.markdown("1 = 이성적 / 9 = 감성적")
-    y = st.slider("Y축", 1, 9, st.session_state.emotion["y"])
-
-    st.session_state.emotion = {"x": x, "y": y}
-
-    recommended = get_tags_from_emotion(x, y)
-    tag_df = pd.read_csv("tag_descriptions.csv")
-    all_tags = sorted(tag_df["tag"].unique().tolist())
-
-    selected = st.multiselect(
-        "👇 너를 가장 잘 표현하는 태그를 골라줘",
-        all_tags,
-        default=[tag for tag in recommended if tag in all_tags]
-    )
-
-    if selected:
-        st.session_state.final_tags = selected
-
+def page_emotion():
+    header("너의 감정을 좌표로 그려볼까?")
+    x = st.slider("자기표현 정도 (X축 1=내향 9=외향)",1,9,st.session_state.emotion["x"])
+    y = st.slider("감정 방향성 (Y축 1=이성 9=감성)",1,9,st.session_state.emotion["y"])
+    st.session_state.emotion.update(x=x,y=y)
+    recommended = rec_tags(x,y)
+    selected = st.multiselect("👇 너를 가장 잘 표현하는 태그를 골라줘", all_tags,
+                              default=[t for t in recommended if t in all_tags])
+    if selected: st.session_state.final_tags = selected
     if st.button("다음으로"):
-        st.session_state.page = "orientation"
-        st.experimental_rerun()
+        st.session_state.page="orientation"; st.experimental_rerun()
 
-def page_orientation():
-    render_header("어떤 만남을 원해?")
-    pref = st.radio("👇 너는 어떤 유형의 만남을 찾고 있어?", ["이성애", "동성애", "양성애"])
+def page_orient():
+    header("어떤 만남을 원해?")
+    pref = st.radio("👇 찾는 만남 유형", ["이성애","동성애","양성애"],
+                    index=["이성애","동성애","양성애"].index(st.session_state.preference or "이성애"))
     if st.button("추천 계속하기"):
-        st.session_state.preference = pref
-        st.session_state.page = "recommendation"
-        st.experimental_rerun()
+        st.session_state.preference=pref; st.session_state.page="recommendation"; st.experimental_rerun()
 
-def page_recommendation():
-    render_header("당신과 감정적으로 닮은 사람")
-
-    df = pd.read_csv("personas_40_full.csv")
+def page_reco():
+    header("당신과 감정적으로 닮은 사람")
+    df = df_persona.copy()
     user_tags = set(st.session_state.final_tags)
     gender = st.session_state.user_gender
     pref = st.session_state.preference
-
-    if pref == "이성애":
-        filtered = df[df["gender"] != gender]
-    elif pref == "동성애":
-        filtered = df[df["gender"] == gender]
-    else:
-        filtered = df
-
-    def match_score(row):
-        persona_tags = set(row["tags"].split(", "))
-        return len(user_tags & persona_tags)
-
-    filtered["score"] = filtered.apply(match_score, axis=1)
-    top_matches = filtered.sort_values(by="score", ascending=False).reset_index(drop=True)
-
-    idx = st.session_state.recommend_index
-    if idx >= len(top_matches):
-        st.warning("더 이상 추천할 사람이 없어요 😢")
-        return
-
-    match = top_matches.iloc[idx]
-
-    st.markdown(f"### {match['name']}")
-    st.markdown(f"**당신이 공감했던 이야기**: {st.session_state.reason_story}")
-    st.markdown(f"**당신의 감정 키워드**: `{'`, `'.join(st.session_state.final_tags)}`")
-    st.markdown(f"**감정 좌표**: ({st.session_state.emotion['x']}, {st.session_state.emotion['y']})")
-
+    if   pref=="이성애": df=df[df["gender"]!=gender]
+    elif pref=="동성애": df=df[df["gender"]==gender]
+    def score(row): return len(user_tags & set(row["tags"].split(", ")))
+    df["score"]=df.apply(score,axis=1)
+    df=df.sort_values("score",ascending=False).reset_index(drop=True)
+    idx=st.session_state.recommend_index
+    if idx>=len(df): st.warning("더 이상 추천할 사람이 없어요 😢"); return
+    m=df.iloc[idx]
+    st.markdown(f"### {m['name']}")
+    st.write(f"**공감했던 이야기**: {st.session_state.reason_story}")
+    st.write(f"**너의 태그**: `{', '.join(st.session_state.final_tags)}`")
+    st.write(f"**감정 좌표**: ({st.session_state.emotion['x']}, {st.session_state.emotion['y']})")
     if st.button("이 사람이 더 궁금해요!"):
-        st.success("이 사람과의 연결을 준비하고 있어요... (계속 개발 중!)")
+        st.success("이 사람과의 연결을 준비하고 있어... (계속 개발 중!)")
+    if st.button("다른 사람 볼래"):
+        st.session_state.recommend_index+=1; st.experimental_rerun()
 
-    if st.button("이 사람은 나와 맞지 않는 것 같아요. 다른 사람은 없을까요?"):
-        st.session_state.recommend_index += 1
-        st.experimental_rerun()
-
-# ✅ 라우팅
-if st.session_state.page == "name_input":
-    page_name_input()
-elif st.session_state.page == "why_here":
-    page_why_here()
-elif st.session_state.page == "emotion_input":
-    page_emotion_input()
-elif st.session_state.page == "orientation":
-    page_orientation()
-elif st.session_state.page == "recommendation":
-    page_recommendation()
+# 6) 라우터
+pages = dict(name_input=page_name, why_here=page_why,
+             emotion_input=page_emotion, orientation=page_orient,
+             recommendation=page_reco)
+pages[st.session_state.page]()
