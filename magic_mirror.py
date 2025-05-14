@@ -169,6 +169,7 @@ elif st.session_state.page == 6:
     def load_personas():
         df = pd.read_csv("personas.csv")
         df["tags"] = df["tags"].apply(lambda t: [tag.strip() for tag in t.split(",")])
+        df["name"] = df["name"].astype(str).str.strip()  # 이름 문자열로 강제 처리
         return df
 
     personas = load_personas()
@@ -182,18 +183,18 @@ elif st.session_state.page == 6:
         coord_dist = ((personas["x"] - user_x) ** 2 + (personas["y"] - user_y) ** 2) ** 0.5
         coord_score = 1 - (coord_dist / coord_dist.max())
 
-        final_score = 0.6 * tag_sim + 0.4 * coord_score
-        personas["score"] = final_score
+        personas["score"] = 0.6 * tag_sim + 0.4 * coord_score
         return personas.sort_values(by="score", ascending=False).head(3)
 
     top_matches = compute_similarity(user_tags, user_x, user_y)
 
     for idx, row in top_matches.iterrows():
-        st.markdown(f"#### {row['name']}")
+        persona_name = str(row["name"]).strip()
+        st.markdown(f"#### {persona_name}")
         st.markdown(f"**감정 태그:** {', '.join(row['tags'])}")
         st.markdown(f"**요약:** {row.get('summary', '요약 정보 없음')}")
         if st.button(f"이 사람과 이어볼래요", key=f"select_{idx}"):
-            st.session_state.selected_persona = row['name']
+            st.session_state.selected_persona = persona_name
             st.session_state.page = 7
 
     if st.button("이전으로 돌아갈래요"):
@@ -212,10 +213,13 @@ elif st.session_state.page == 7:
         @st.cache_data
         def load_stories():
             df = pd.read_csv("story.csv")
+            df["name"] = df["name"].astype(str).str.strip()
             return df
 
         stories = load_stories()
-        story_row = stories[stories["name"].str.strip() == name.strip()]
+
+        # 안전한 비교
+        story_row = stories[stories["name"] == name.strip()]
 
         if not story_row.empty:
             story_text = story_row.iloc[0]["story"]
@@ -229,7 +233,7 @@ elif st.session_state.page == 7:
 
             st.markdown("---")
             st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
-이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
+            이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
 
             col1, col2 = st.columns(2)
             with col1:
