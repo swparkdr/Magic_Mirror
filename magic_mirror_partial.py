@@ -83,7 +83,7 @@ def page_encourage():
 **이번이 네 동화 같은 인연의 시작이 되길 바라!**
 
 {uname}, 사람들과 연결될 준비 됐어?  
-마음이 아직 안 열렸다면 천천히 해도 돼 🙂
+마음이 아직 안 열렸으면 천천히 해도 괜찮아 🙂
 """)
     col1,col2 = st.columns(2)
     if col1.button("준비됐어, 시작하자!"):
@@ -112,4 +112,44 @@ def page_why():
 def page_emotion():
     st.header("네 감정을 좌표로 그려볼까?")
     x = st.slider("자기표현 정도 (1=내향, 9=외향)", 1, 9, st.session_state.emotion["x"])
-    y = st.slider("감정 방향성 (1=이성, 9=감성
+    y = st.slider("감정 방향성 (1=이성, 9=감성)", 1, 9, st.session_state.emotion["y"])  # ← 따옴표 닫힘 확인
+    st.session_state.emotion = {"x":x,"y":y}
+
+    default_tags = [t for t in rec_tags(x, y) if t in all_tags]
+
+    st.session_state.final_tags = st.multiselect(
+        "너를 잘 표현하는 태그 골라봐",
+        all_tags,
+        default=default_tags,
+    )
+    if st.button("다음으로"):
+        st.session_state.page="recommend"
+
+def page_recommend():
+    st.header("너랑 감정적으로 닮은 사람이야")
+    user_tags=set(st.session_state.final_tags)
+    df=df_persona.copy()
+    df["score"]=df["tags"].apply(lambda t: len(user_tags & set(t.split(", "))))
+    df=df.sort_values("score",ascending=False).reset_index(drop=True)
+    idx=st.session_state.recommend_index
+    if idx>=len(df):
+        st.warning("추천할 사람이 더 없어 😥"); return
+    row=df.iloc[idx]
+    st.subheader(row["name"])
+    st.write("공감했던 이야기:", st.session_state.reason_story or "—")
+    st.write("네 태그:", ", ".join(st.session_state.final_tags) or "—")
+    st.write("감정 좌표:", st.session_state.emotion)
+    if st.button("다른 사람도 볼래"):
+        st.session_state.recommend_index += 1
+        st.experimental_rerun()
+
+# 7) 라우터
+pages = {
+    "landing":    landing,
+    "name":       page_name,
+    "encourage":  page_encourage,
+    "why":        page_why,
+    "emotion":    page_emotion,
+    "recommend":  page_recommend,
+}
+pages[st.session_state.page]()
