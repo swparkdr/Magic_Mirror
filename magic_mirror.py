@@ -20,7 +20,6 @@ page_bg_img = '''
 '''
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# 세션 상태로 페이지 전환 제어
 if 'page' not in st.session_state:
     st.session_state.page = 1
 
@@ -100,9 +99,8 @@ elif st.session_state.page == 3:
     with col2:
         if st.button("돌아가기"):
             st.session_state.page = 2
-            st.experimental_rerun()
 
-# 4️⃣ 페이지 4: 감정 좌표 + 감정 태그 선택
+# 4️⃣ 페이지 4: 감정 슬라이더
 elif st.session_state.page == 4:
     st.markdown(f"### {st.session_state.username}님, 지금의 감정을 잠깐만 들여다볼까요?")
     st.markdown("""
@@ -121,25 +119,45 @@ elif st.session_state.page == 4:
 
     tags_df = load_tags()
     match = tags_df[(tags_df["x"] == x) & (tags_df["y"] == y)]
-
     recommended_tags = match.iloc[0]["tags"] if not match.empty else []
 
     all_tags = sorted(set(tag for sublist in tags_df["tags"] for tag in sublist))
-    selected_tags = st.multiselect("추가로 지금의 감정을 표현할 단어를 선택해주세요", options=all_tags, default=recommended_tags)
+    selected_tags = st.multiselect("지금 당신을 표현하는 감정 단어를 골라주세요.", options=all_tags, default=recommended_tags)
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("이 감정으로 다음 단계로 갈게요"):
+        if st.button("다음으로"):
             st.session_state.feeling_x = x
             st.session_state.feeling_y = y
             st.session_state.feeling_tags = selected_tags
             st.session_state.page = 5
     with col2:
-        if st.button("이전으로 돌아갈래요"):
+        if st.button("이전으로"):
             st.session_state.page = 3
 
-# 5️⃣ 페이지 5: 감정 페르소나 추천
+# 5️⃣ 페이지 5: 성향 슬라이더 (내향-외향 / 배려-표현)
 elif st.session_state.page == 5:
+    st.markdown(f"### {st.session_state.username}님에 대해 조금 더 알려주세요")
+    st.markdown("""
+    감정뿐 아니라, 관계 속에서의 당신의 **성향**도 함께 알고 싶어요.  
+    조용히 바라보는 편인가요? 아니면 먼저 다가가는 편인가요?
+    """)
+
+    intro_extro = st.slider("나는 더 내향적인가요, 외향적인가요?", 1, 9, 5)
+    care_express = st.slider("나는 배려 중심인가요, 자기표현 중심인가요?", 1, 9, 5)
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("다음으로 넘어갈게요"):
+            st.session_state.personality_introvert = intro_extro
+            st.session_state.personality_expression = care_express
+            st.session_state.page = 6
+    with col2:
+        if st.button("감정 선택으로 돌아갈래요"):
+            st.session_state.page = 4
+
+# 6️⃣ 페이지 6: 감정 페르소나 추천
+elif st.session_state.page == 6:
     st.markdown(f"### {st.session_state.username}님과 비슷한 감정의 사람들을 찾아봤어요.")
     st.markdown("이 감정의 결을 닮은 사람들을 데려왔어. 누구와 지금 감정을 함께 나누고 싶어?")
 
@@ -164,7 +182,8 @@ elif st.session_state.page == 5:
         coord_dist = ((personas["x"] - user_x) ** 2 + (personas["y"] - user_y) ** 2) ** 0.5
         coord_score = 1 - (coord_dist / coord_dist.max())
 
-        personas["score"] = 0.6 * tag_sim + 0.4 * coord_score
+        final_score = 0.6 * tag_sim + 0.4 * coord_score
+        personas["score"] = final_score
         return personas.sort_values(by="score", ascending=False).head(3)
 
     top_matches = compute_similarity(user_tags, user_x, user_y)
@@ -172,23 +191,23 @@ elif st.session_state.page == 5:
     for idx, row in top_matches.iterrows():
         st.markdown(f"#### {row['name']}")
         st.markdown(f"**감정 태그:** {', '.join(row['tags'])}")
-        st.markdown(f"**요약:** {row['summary']}")
+        st.markdown(f"**요약:** {row.get('summary', '요약 정보 없음')}")
         if st.button(f"이 사람과 이어볼래요", key=f"select_{idx}"):
             st.session_state.selected_persona = row['name']
-            st.session_state.page = 6
+            st.session_state.page = 7
 
     if st.button("이전으로 돌아갈래요"):
-        st.session_state.page = 4
+        st.session_state.page = 5
 
-# 6️⃣ 페이지 6: 감정 스토리
-elif st.session_state.page == 6:
+# 7️⃣ 페이지 7: 감정 스토리
+elif st.session_state.page == 7:
     name = st.session_state.get("selected_persona", None)
     username = st.session_state.get("username", "당신")
 
     if not name:
         st.error("선택된 페르소나가 없어요. 이전 단계로 돌아가주세요.")
         if st.button("돌아가기"):
-            st.session_state.page = 5
+            st.session_state.page = 6
     else:
         @st.cache_data
         def load_stories():
@@ -203,7 +222,7 @@ elif st.session_state.page == 6:
             st.markdown(f"### {username}님, 이 사람의 이야기를 들어볼래요?")
             st.markdown("#### ✧ 감정의 결을 따라온 이야기")
             st.markdown(f"""
-            <div style='background-color: #f8f5ff; padding: 20px; border-radius: 12px; font-size: 16px;'>
+            <div style='background-color: #f8f5ff; padding: 20px; border-radius: 12px; font-size: 16px; line-height: 1.7em;'>
             {story_text}
             </div>
             """, unsafe_allow_html=True)
