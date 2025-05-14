@@ -37,7 +37,6 @@ if st.session_state.page == 1:
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
-        st.experimental_rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 # 2️⃣ 페이지 2: 결 소개 + 선택
@@ -68,7 +67,6 @@ elif st.session_state.page == 2:
     with col1:
         if st.button("준비가 된 것 같아요"):
             st.session_state.page = 3
-            st.experimental_rerun()
     with col2:
         if st.button("잘 모르겠어요"):
             st.info("그럴 수도 있어요. 마음이 괜찮아질 때까지 충분히 기다려줄게요.")
@@ -97,7 +95,6 @@ elif st.session_state.page == 3:
             if name.strip():
                 st.session_state.username = name
                 st.session_state.page = 4
-                st.experimental_rerun()
             else:
                 st.warning("이름을 입력해 주세요!")
     with col2:
@@ -137,11 +134,9 @@ elif st.session_state.page == 4:
             st.session_state.feeling_y = y
             st.session_state.feeling_tags = selected_tags
             st.session_state.page = 5
-            st.experimental_rerun()
     with col2:
         if st.button("이전으로 돌아갈래요"):
             st.session_state.page = 3
-            st.experimental_rerun()
 
 # 5️⃣ 페이지 5: 감정 페르소나 추천
 elif st.session_state.page == 5:
@@ -181,11 +176,9 @@ elif st.session_state.page == 5:
         if st.button(f"이 사람과 이어볼래요", key=f"select_{idx}"):
             st.session_state.selected_persona = row['name']
             st.session_state.page = 6
-            st.experimental_rerun()
 
     if st.button("이전으로 돌아갈래요"):
         st.session_state.page = 4
-        st.experimental_rerun()
 
 # 6️⃣ 페이지 6: 감정 스토리
 elif st.session_state.page == 6:
@@ -196,7 +189,6 @@ elif st.session_state.page == 6:
         st.error("선택된 페르소나가 없어요. 이전 단계로 돌아가주세요.")
         if st.button("돌아가기"):
             st.session_state.page = 5
-            st.experimental_rerun()
     else:
         @st.cache_data
         def load_stories():
@@ -224,7 +216,6 @@ elif st.session_state.page == 6:
             with col1:
                 if st.button("다시 해볼래"):
                     st.session_state.page = 1
-                    st.experimental_rerun()
             with col2:
                 if st.button("내 결 저장하기"):
                     st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
