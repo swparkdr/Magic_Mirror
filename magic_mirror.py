@@ -1,4 +1,7 @@
 import streamlit as st
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.feature_extraction.text import CountVectorizer
 
 # 페이지 설정
 st.set_page_config(page_title="결(結)", layout="centered")
@@ -38,7 +41,6 @@ if st.session_state.page == 1:
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
-        st.experimental_rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 # 2️⃣ 페이지 2: 결 소개 + 선택
@@ -69,7 +71,6 @@ elif st.session_state.page == 2:
     with col1:
         if st.button("준비가 된 것 같아요"):
             st.session_state.page = 3
-            st.experimental_rerun()
     with col2:
         if st.button("잘 모르겠어요"):
             st.info("그럴 수도 있어요. 마음이 괜찮아질 때까지 충분히 기다려줄게요.")
@@ -98,10 +99,100 @@ elif st.session_state.page == 3:
             if name.strip():
                 st.session_state.username = name
                 st.session_state.page = 4
-                st.experimental_rerun()
             else:
                 st.warning("이름을 입력해 주세요!")
     with col2:
         if st.button("돌아가기"):
             st.session_state.page = 2
+
+# 4️⃣ 페이지 4: 감정 좌표 + 감정 태그 선택
+elif st.session_state.page == 4:
+    st.markdown(f"### {st.session_state.username}님, 지금의 감정을 잠깐만 들여다볼까요?")
+    st.markdown("""
+    우리가 지금 머물고 있는 감정의 좌표를 알려줘.  
+    고요함과 격렬함 사이, 우울함과 희망 사이 어딘가에 당신이 있어.
+    """)
+
+    # 감정 좌표 슬라이더
+    x = st.slider("감정의 강도 (고요 ↔ 격렬)", 1, 9, 5)
+    y = st.slider("감정의 방향 (우울 ↔ 희망)", 1, 9, 5)
+
+    # 감정 태그 매핑 로딩
+    @st.cache_data
+    def load_tags():
+        df = pd.read_csv("tags.csv")
+        df["tags"] = df["tags"].apply(lambda t: [tag.strip() for tag in t.split(",")])
+        return df
+
+    tags_df = load_tags()
+    match = tags_df[(tags_df["x"] == x) & (tags_df["y"] == y)]
+
+    if not match.empty:
+        recommended_tags = match.iloc[0]["tags"]
+        st.markdown(f"#### 추천 감정 태그: {', '.join(recommended_tags)}")
+    else:
+        recommended_tags = []
+
+    # 감정 태그 선택
+    all_tags = sorted(set(tag for sublist in tags_df["tags"] for tag in sublist))
+    selected_tags = st.multiselect("추가로 지금의 감정을 표현할 단어를 선택해주세요", options=all_tags, default=recommended_tags)
+
+    # 다음 or 이전
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("이 감정으로 다음 단계로 갈게요"):
+            st.session_state.feeling_x = x
+            st.session_state.feeling_y = y
+            st.session_state.feeling_tags = selected_tags
+            st.session_state.page = 5
+    with col2:
+        if st.button("이전으로 돌아갈래요"):
+            st.session_state.page = 3
+
+# 5️⃣ 페이지 5: 감정 페르소나 추천
+elif st.session_state.page == 5:
+    st.markdown(f"### {st.session_state.username}님과 비슷한 감정의 사람들을 찾아봤어요.")
+    st.markdown("이 감정의 결을 닮은 사람들을 데려왔어. 누구와 지금 감정을 함께 나누고 싶어?")
+
+    # 사용자 입력
+    user_tags = st.session_state.feeling_tags
+    user_x = st.session_state.feeling_x
+    user_y = st.session_state.feeling_y
+
+    # 데이터 로딩
+    @st.cache_data
+    def load_personas():
+        df = pd.read_csv("personas.csv")
+        df["tags"] = df["tags"].apply(lambda t: [tag.strip() for tag in t.split(",")])
+        return df
+
+    personas = load_personas()
+
+    # 유사도 계산: 태그 기반 + 좌표 거리 반영
+    def compute_similarity(user_tags, user_x, user_y):
+        vectorizer = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
+        tag_matrix = vectorizer.fit_transform(personas["tags"])
+        user_vec = vectorizer.transform([user_tags])
+
+        tag_sim = cosine_similarity(tag_matrix, user_vec).flatten()
+        coord_dist = ((personas["x"] - user_x) ** 2 + (personas["y"] - user_y) ** 2) ** 0.5
+        coord_score = 1 - (coord_dist / coord_dist.max())  # normalize
+
+        final_score = 0.6 * tag_sim + 0.4 * coord_score
+        personas["score"] = final_score
+        return personas.sort_values(by="score", ascending=False).head(3)
+
+    top_matches = compute_similarity(user_tags, user_x, user_y)
+
+    for idx, row in top_matches.iterrows():
+        st.markdown(f"#### {row['name']}")
+        st.markdown(f"**감정 태그:** {', '.join(row['tags'])}")
+        st.markdown(f"**요약:** {row['summary']}")
+        if st.button(f"이 사람과 이어볼래요", key=f"select_{idx}"):
+            st.session_state.selected_persona = row['name']
+            st.session_state.page = 6
             st.experimental_rerun()
+
+    if st.button("이전으로 돌아갈래요"):
+        st.session_state.page = 4
+        st.experimental_rerun()
