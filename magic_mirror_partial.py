@@ -6,7 +6,7 @@ import pandas as pd
 # 1) 기본 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# 2) 간단 스타일(CSS) – 배경색·버튼 컬러만
+# 2) 아주 간단한 CSS(배경색·버튼 컬러만)
 st.markdown("""
 <style>
 body            {background:#F9F5F0; font-family:'Noto Sans KR',sans-serif; color:#333;}
@@ -48,7 +48,7 @@ defaults = dict(
 for k,v in defaults.items():
     st.session_state.setdefault(k,v)
 
-# 5) 간단 유틸
+# 5) 유틸
 def rec_tags(x,y):
     if x<=3 and y<=3:   return ["신중함","감정 절제","분석적","객관적","침착함"]
     if x>=7 and y>=7:   return ["외향적","공감","유쾌함","에너지","감성적"]
@@ -63,19 +63,33 @@ def landing():
     else:
         st.markdown("<h2 style='text-align:center;'>🪞</h2>", unsafe_allow_html=True)
     st.markdown("<h1 style='text-align:center;'>Magic Mirror</h1>", unsafe_allow_html=True)
-
     if st.button("시작하기"):
         st.session_state.page="name"
 
 def page_name():
     st.header("너는 누구니?")
     st.markdown("우선, 네 이름을 알고 싶어.\n\n너는 이름이 뭐야? 별명도 좋고, 뭐든 좋아!")
-    name   = st.text_input("이름", st.session_state.user_name)
+    name   = st.text_input("이름",  st.session_state.user_name)
     gender = st.radio("성별", ["남성","여성"],
                       index=("남성","여성").index(st.session_state.user_gender))
     if st.button("다음으로") and name.strip():
-        st.session_state.user_name, st.session_state.user_gender = name.strip(), gender
+        st.session_state.user_name   = name.strip()
+        st.session_state.user_gender = gender
+        st.session_state.page        = "encourage"
+        st.experimental_rerun()
+
+def page_encourage():
+    st.header("작은 용기의 순간")
+    st.markdown("""
+관계를 맺는 일은 언제나 작은 용기가 필요해요.  
+당신이 이름을 적으며 내민 그 손길은 이미 충분히 소중합니다.  
+우리는 모두 행복할 자격이 있고, 당신 역시 누군가에게 반짝이는 존재예요.  
+우리 사실 모두 동화를 꿈꾸잖아요. 현실이 동화같을 수만은 없겠지만,  
+**당신에게도 그런 동화 같은 인연의 시작이 될 수 있기를 바라며.**
+""")
+    if st.button("계속"):
         st.session_state.page="why"
+        st.experimental_rerun()
 
 def page_why():
     st.header(f"{st.session_state.user_name}, 나를 왜 찾았어?")
@@ -124,6 +138,7 @@ def page_recommend():
 pages = {
     "landing":    landing,
     "name":       page_name,
+    "encourage":  page_encourage,      # 🆕 추가
     "why":        page_why,
     "emotion":    page_emotion,
     "recommend":  page_recommend,
