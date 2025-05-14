@@ -107,8 +107,9 @@ def page_landing():
         st.experimental_rerun()
 
 def page_name():
-    header("우선, 네 이름을 알고 싶어. 
-    너는 이름이 뭐야? 별명도 좋고, 뭐든 좋아!")
+    st.markdown(
+    "우선, 네 이름을 알고 싶어.\n\n"
+    "너는 이름이 뭐야? 별명도 좋고, 뭐든 좋아!"
     name = st.text_input("이름", st.session_state.user_name)
     gender = st.radio("성별", ["남성", "여성"],
                       index=("남성","여성").index(st.session_state.user_gender))
