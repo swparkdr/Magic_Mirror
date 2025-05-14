@@ -3,10 +3,10 @@ import os, pathlib, random, re
 import streamlit as st
 import pandas as pd
 
-# 1) 페이지 설정 ― 가장 첫 번째 Streamlit 호출이어야 함
+# 1) 페이지 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# 2) 전역 테마 파일(.streamlit/config.toml) ― 없으면 자동 생성
+# 2) 전역 테마
 THEME = """
 [theme]
 base  = "light"
@@ -20,7 +20,7 @@ cfg = pathlib.Path(".streamlit/config.toml")
 if not cfg.exists():
     cfg.write_text(THEME.strip())
 
-# 3) CSS 인젝션(버튼·폰트·배경 등)
+# 3) CSS
 st.markdown("""
 <style>
 body            {background:#F9F5F0;font-family:'Noto Sans KR',sans-serif;color:#333;}
@@ -34,7 +34,7 @@ button[data-baseweb="button"]:hover{
 </style>
 """, unsafe_allow_html=True)
 
-# 4) CSV 준비 ― 없으면 더미 데이터 생성
+# 4) CSV (없으면 더미)
 persona_path = "personas_40_full.csv"
 tags_path    = "tag_descriptions.csv"
 
@@ -57,9 +57,10 @@ df_persona = pd.read_csv(persona_path)
 df_tags    = pd.read_csv(tags_path)
 all_tags   = sorted(df_tags["tag"].unique().tolist())
 
-# 5) 세션 상태 초기화
+# 5) 세션 상태
 default_state = dict(
-    page="name_input", user_name="", user_gender="남성", preference="",
+    page="landing",
+    user_name="", user_gender="남성", preference="",
     reason_name="", reason_story="", selected_reason_tags=[],
     emotion=dict(x=5, y=5), final_tags=[], recommend_index=0,
     candidates=df_persona.sample(4).to_dict("records"),
@@ -67,7 +68,7 @@ default_state = dict(
 for k, v in default_state.items():
     st.session_state.setdefault(k, v)
 
-# 6) 공통 헤더
+# 6) 헤더
 def header(sub):
     st.markdown(
         "<h1 style='text-align:center;'>✨ Magic Mirror</h1>",
@@ -77,24 +78,39 @@ def header(sub):
                 unsafe_allow_html=True)
     st.markdown("---")
 
-# 7) 유틸 함수
+# 7) 유틸
 def rec_tags(x, y):
-    if x <= 3 and y <= 3:
-        return ["신중함", "감정 절제", "분석적", "객관적", "침착함"]
-    if x >= 7 and y >= 7:
-        return ["외향적", "공감", "유쾌함", "에너지", "감성적"]
-    if x <= 3 and y >= 7:
-        return ["내성적", "섬세함", "조율자", "감정이입", "사려 깊음"]
-    if x >= 7 and y <= 3:
-        return ["직진형", "열정", "추진력", "감정 표현", "감정적"]
-    return ["균형감", "성찰", "유연함", "현실적", "자기통제"]
+    if x <= 3 and y <= 3:   return ["신중함","감정 절제","분석적","객관적","침착함"]
+    if x >= 7 and y >= 7:   return ["외향적","공감","유쾌함","에너지","감성적"]
+    if x <= 3 and y >= 7:   return ["내성적","섬세함","조율자","감정이입","사려 깊음"]
+    if x >= 7 and y <= 3:   return ["직진형","열정","추진력","감정 표현","감정적"]
+    return ["균형감","성찰","유연함","현실적","자기통제"]
 
-# 8) 페이지 정의
+# 8) 페이지
+def page_landing():
+    if os.path.exists("logo.png"):
+        st.image("logo.png", width=180)
+    else:
+        st.markdown("<h2 style='text-align:center;'>🪞</h2>", unsafe_allow_html=True)
+
+    # 🔹 소개 문구를 따뜻한 인사로 변경
+    st.markdown(
+        "<p style='text-align:center; font-size:18px;'>"
+        "안녕! 나는 네 마음을 비추는 작은 거울, <b>Magic Mirror</b>야. "
+        "반가워! 너의 감정 빛깔을 살펴 멋진 인연으로 이어줄게."
+        "</p>",
+        unsafe_allow_html=True,
+    )
+
+    if st.button("시작하기"):
+        st.session_state.page = "name_input"
+        st.experimental_rerun()
+
 def page_name():
     header("너는 누구니?")
     name = st.text_input("이름", st.session_state.user_name)
     gender = st.radio("성별", ["남성", "여성"],
-                      index=("남성", "여성").index(st.session_state.user_gender))
+                      index=("남성","여성").index(st.session_state.user_gender))
     if st.button("다음으로"):
         if name.strip():
             st.session_state.user_name = name.strip()
@@ -133,8 +149,7 @@ def page_emotion():
     recommended = rec_tags(x, y)
     selected = st.multiselect(
         "👇 너를 가장 잘 표현하는 태그를 골라줘",
-        all_tags,
-        default=[t for t in recommended if t in all_tags],
+        all_tags, default=[t for t in recommended if t in all_tags],
     )
     if selected:
         st.session_state.final_tags = selected
@@ -145,8 +160,8 @@ def page_emotion():
 def page_orient():
     header("어떤 만남을 원해?")
     pref = st.radio("👇 찾는 만남 유형",
-                    ["이성애", "동성애", "양성애"],
-                    index=["이성애", "동성애", "양성애"]
+                    ["이성애","동성애","양성애"],
+                    index=["이성애","동성애","양성애"]
                     .index(st.session_state.preference or "이성애"))
     if st.button("추천 계속하기"):
         st.session_state.preference = pref
@@ -159,15 +174,10 @@ def page_reco():
     user_tags = set(st.session_state.final_tags)
     gender = st.session_state.user_gender
     pref = st.session_state.preference
-    if   pref == "이성애":
-        df = df[df["gender"] != gender]
-    elif pref == "동성애":
-        df = df[df["gender"] == gender]
+    if   pref == "이성애": df = df[df["gender"] != gender]
+    elif pref == "동성애": df = df[df["gender"] == gender]
 
-    def score(row):
-        return len(user_tags & set(row["tags"].split(", ")))
-
-    df["score"] = df.apply(score, axis=1)
+    df["score"] = df["tags"].apply(lambda t: len(user_tags & set(t.split(", "))))
     df = df.sort_values("score", ascending=False).reset_index(drop=True)
 
     idx = st.session_state.recommend_index
@@ -191,6 +201,7 @@ def page_reco():
 
 # 9) 라우팅
 pages = {
+    "landing":          page_landing,
     "name_input":       page_name,
     "why_here":         page_why,
     "emotion_input":    page_emotion,
