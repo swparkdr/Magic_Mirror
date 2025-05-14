@@ -97,7 +97,7 @@ def page_landing():
     st.markdown(
         "<p style='text-align:center; font-size:18px;'>"
         "안녕! 나는 네 마음을 비추는 작은 거울, <b>Magic Mirror</b>야. "
-        "반가워! 너의 감정 빛깔을 살펴 멋진 인연으로 이어줄게."
+        "반가워! 너를 살펴 멋진 인연으로 이어줄게."
         "</p>",
         unsafe_allow_html=True,
     )
@@ -107,7 +107,7 @@ def page_landing():
         st.experimental_rerun()
 
 def page_name():
-    header("너는 누구니?")
+    header("우선, 네 이름을 알고 싶어. 너는 이름이 뭐야? 별명도 좋고, 뭐든 좋아!")
     name = st.text_input("이름", st.session_state.user_name)
     gender = st.radio("성별", ["남성", "여성"],
                       index=("남성","여성").index(st.session_state.user_gender))
@@ -119,7 +119,7 @@ def page_name():
             st.experimental_rerun()
 
 def page_why():
-    header(f"{st.session_state.user_name}, 나를 왜 찾았어?")
+    header(f"{st.session_state.user_name}, 오늘은 나를 왜 찾았어?")
     for row in st.session_state.candidates:
         story = re.sub(r"사람\\d+", row["name"], row["story"])
         st.markdown(f"#### {row['name']}")
