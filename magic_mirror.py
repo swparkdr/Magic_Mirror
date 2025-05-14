@@ -26,21 +26,18 @@ if 'page' not in st.session_state:
 
 # 1️⃣ 페이지 1: 텍스트 + 시작
 if st.session_state.page == 1:
-    st.markdown(
-        '''
+    st.markdown('''
         <div style="text-align: center; margin-top: 30vh;">
             <div style="font-size: 16px; color: #555; font-family: 'Pretendard', sans-serif;">
                 너의 결, 그리고 나의 결.
             </div>
         </div>
-        ''',
-        unsafe_allow_html=True
-    )
+    ''', unsafe_allow_html=True)
 
-    # Streamlit 방식 중앙 정렬 버튼
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
+        st.experimental_rerun()
     st.markdown("</div>", unsafe_allow_html=True)
 
 # 2️⃣ 페이지 2: 결 소개 + 선택
@@ -71,6 +68,7 @@ elif st.session_state.page == 2:
     with col1:
         if st.button("준비가 된 것 같아요"):
             st.session_state.page = 3
+            st.experimental_rerun()
     with col2:
         if st.button("잘 모르겠어요"):
             st.info("그럴 수도 있어요. 마음이 괜찮아질 때까지 충분히 기다려줄게요.")
@@ -85,7 +83,7 @@ elif st.session_state.page == 3:
     어린왕자 이야기를 아시나요?  
     여우는 말합니다. "너는 아직 내게 수많은 사람 중 하나일 뿐이야.  
     하지만 네가 나를 길들인다면, 나는 너에게 세상에 하나뿐인 존재가 될 거야."  
-    
+
     누군가의 이름을 부르고, 기억하고, 마음에 담는 건 그런 의미예요.  
     이제, 당신을 부를 수 있게 해줄 이름이나 별명을 알려주세요.  
     그게 우리 여정의 첫 걸음이 될 거예요.
@@ -99,11 +97,13 @@ elif st.session_state.page == 3:
             if name.strip():
                 st.session_state.username = name
                 st.session_state.page = 4
+                st.experimental_rerun()
             else:
                 st.warning("이름을 입력해 주세요!")
     with col2:
         if st.button("돌아가기"):
             st.session_state.page = 2
+            st.experimental_rerun()
 
 # 4️⃣ 페이지 4: 감정 좌표 + 감정 태그 선택
 elif st.session_state.page == 4:
@@ -113,11 +113,9 @@ elif st.session_state.page == 4:
     고요함과 격렬함 사이, 우울함과 희망 사이 어딘가에 당신이 있어.
     """)
 
-    # 감정 좌표 슬라이더
     x = st.slider("감정의 강도 (고요 ↔ 격렬)", 1, 9, 5)
     y = st.slider("감정의 방향 (우울 ↔ 희망)", 1, 9, 5)
 
-    # 감정 태그 매핑 로딩
     @st.cache_data
     def load_tags():
         df = pd.read_csv("tags.csv")
@@ -127,17 +125,11 @@ elif st.session_state.page == 4:
     tags_df = load_tags()
     match = tags_df[(tags_df["x"] == x) & (tags_df["y"] == y)]
 
-    if not match.empty:
-        recommended_tags = match.iloc[0]["tags"]
-        st.markdown(f"#### 추천 감정 태그: {', '.join(recommended_tags)}")
-    else:
-        recommended_tags = []
+    recommended_tags = match.iloc[0]["tags"] if not match.empty else []
 
-    # 감정 태그 선택
     all_tags = sorted(set(tag for sublist in tags_df["tags"] for tag in sublist))
     selected_tags = st.multiselect("추가로 지금의 감정을 표현할 단어를 선택해주세요", options=all_tags, default=recommended_tags)
 
-    # 다음 or 이전
     col1, col2 = st.columns(2)
     with col1:
         if st.button("이 감정으로 다음 단계로 갈게요"):
@@ -145,21 +137,21 @@ elif st.session_state.page == 4:
             st.session_state.feeling_y = y
             st.session_state.feeling_tags = selected_tags
             st.session_state.page = 5
+            st.experimental_rerun()
     with col2:
         if st.button("이전으로 돌아갈래요"):
             st.session_state.page = 3
+            st.experimental_rerun()
 
 # 5️⃣ 페이지 5: 감정 페르소나 추천
 elif st.session_state.page == 5:
     st.markdown(f"### {st.session_state.username}님과 비슷한 감정의 사람들을 찾아봤어요.")
     st.markdown("이 감정의 결을 닮은 사람들을 데려왔어. 누구와 지금 감정을 함께 나누고 싶어?")
 
-    # 사용자 입력
     user_tags = st.session_state.feeling_tags
     user_x = st.session_state.feeling_x
     user_y = st.session_state.feeling_y
 
-    # 데이터 로딩
     @st.cache_data
     def load_personas():
         df = pd.read_csv("personas.csv")
@@ -168,7 +160,6 @@ elif st.session_state.page == 5:
 
     personas = load_personas()
 
-    # 유사도 계산: 태그 기반 + 좌표 거리 반영
     def compute_similarity(user_tags, user_x, user_y):
         vectorizer = CountVectorizer(tokenizer=lambda x: x, lowercase=False)
         tag_matrix = vectorizer.fit_transform(personas["tags"])
@@ -176,10 +167,9 @@ elif st.session_state.page == 5:
 
         tag_sim = cosine_similarity(tag_matrix, user_vec).flatten()
         coord_dist = ((personas["x"] - user_x) ** 2 + (personas["y"] - user_y) ** 2) ** 0.5
-        coord_score = 1 - (coord_dist / coord_dist.max())  # normalize
+        coord_score = 1 - (coord_dist / coord_dist.max())
 
-        final_score = 0.6 * tag_sim + 0.4 * coord_score
-        personas["score"] = final_score
+        personas["score"] = 0.6 * tag_sim + 0.4 * coord_score
         return personas.sort_values(by="score", ascending=False).head(3)
 
     top_matches = compute_similarity(user_tags, user_x, user_y)
@@ -227,8 +217,8 @@ elif st.session_state.page == 6:
             """, unsafe_allow_html=True)
 
             st.markdown("---")
-            st.markdown(f"**{username}**, 당신의 감정은 정말 소중해요.  
-            이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.")
+            st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
+이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
 
             col1, col2 = st.columns(2)
             with col1:
