@@ -215,7 +215,7 @@ elif st.session_state.page == 7:
             return df
 
         stories = load_stories()
-        story_row = stories[stories["name"] == name]
+        story_row = stories[stories["name"].str.strip() == name.strip()]
 
         if not story_row.empty:
             story_text = story_row.iloc[0]["story"]
