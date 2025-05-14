@@ -6,7 +6,7 @@ import pandas as pd
 # 1) 기본 설정
 st.set_page_config(page_title="Magic Mirror", layout="centered")
 
-# 2) 아주 가벼운 CSS
+# 2) 가벼운 CSS
 st.markdown("""
 <style>
 body{background:#F9F5F0;font-family:'Noto Sans KR',sans-serif;color:#333;}
@@ -16,7 +16,7 @@ button[data-baseweb="button"]:hover{background:#DAD3FF!important;color:#333;}
 </style>
 """, unsafe_allow_html=True)
 
-# 3) CSV 준비 (없으면 더미 생성)
+# 3) CSV 준비 (없으면 더미)
 if not os.path.exists("personas_40_full.csv"):
     pd.DataFrame({
         "id": range(1, 41),
@@ -78,20 +78,18 @@ def page_encourage():
     st.header("작은 용기의 순간이야")
     st.markdown(f"""
 누군가랑 이어지려면 항상 조금의 용기가 필요해.  
-네가 이름을 적은 그 순간, 이미 한 걸음 내디딘 거야.  
-우리 모두 행복할 자격이 있고, 너도 누군가에게 빛나는 존재니까!
+이름 적은 순간, 이미 한 걸음 내디딘 거야.  
 
-사실 우리 다 동화를 꿈꾸잖아? 현실은 동화랑 좀 다를 수 있지만,  
-**이번이 네 동화 같은 인연의 시작이 되길 바랄게.**
+**이번이 네 동화 같은 인연의 시작이 되길 바라!**
 
 {uname}, 사람들과 연결될 준비 됐어?  
-아직 마음이 안 열렸거나, 나를 더 알고 싶으면 천천히 해도 돼!
+마음이 아직 안 열렸다면 천천히 해도 돼 🙂
 """)
     col1,col2 = st.columns(2)
     if col1.button("준비됐어, 시작하자!"):
         st.session_state.page="why"; st.experimental_rerun()
     if col2.button("잘 모르겠어…"):
-        st.info("자기 탐구 기능은 만드는 중이야 :)")
+        st.info("자기 탐구 기능은 만드는 중이야 🙂")
         if st.button("돌아가기"):
             st.session_state.page="encourage"; st.experimental_rerun()
 
@@ -99,60 +97,19 @@ def page_why():
     uname = st.session_state.user_name or "친구"
     st.header(f"{uname}, 왜 나를 찾았어?")
     st.markdown("""
-이제 네 얘기를 본격적으로 들어볼게!  
+네 얘기를 본격적으로 들어볼게!  
 아래 사람들 중 **제일 공감 가는 이야기**를 골라줘.
-
-*누군가의 스토리에 공명하면, 내 마음도 더 선명해지거든.*  
 """)
     for row in st.session_state.candidates:
         story = re.sub(r"(사람\\d+|Person\\d+)", row["name"], row["story"])
-        st.subheader(row["name"])
-        st.write(row["intro"])
-        st.write(story)
+        st.subheader(row["name"]); st.write(row["intro"]); st.write(story)
         if st.button(f"👉 이 이야기 공감돼 ({row['name']})", key=row["name"]):
             st.session_state.reason_story = story
-            st.session_state.page="emotion"
-            st.experimental_rerun()
+            st.session_state.page="emotion"; st.experimental_rerun()
     if st.button("다른 이야기 보여줘"):
-        st.session_state.candidates = df_persona.sample(4).to_dict("records")
-        st.experimental_rerun()
+        st.session_state.candidates = df_persona.sample(4).to_dict("records"); st.experimental_rerun()
 
 def page_emotion():
     st.header("네 감정을 좌표로 그려볼까?")
     x = st.slider("자기표현 정도 (1=내향, 9=외향)", 1, 9, st.session_state.emotion["x"])
-    y = st.slider("감정 방향성 (1=이성, 9=감성)",   1, 9, st.session_state.emotion["y"])
-    st.session_state.emotion = {"x":x,"y":y}
-    st.session_state.final_tags = st.multiselect(
-        "너를 잘 표현하는 태그 골라봐",
-        all_tags, rec_tags(x,y))
-    if st.button("다음으로"):
-        st.session_state.page="recommend"
-
-def page_recommend():
-    st.header("너랑 감정적으로 닮은 사람이야")
-    user_tags = set(st.session_state.final_tags)
-    df = df_persona.copy()
-    df["score"] = df["tags"].apply(lambda t: len(user_tags & set(t.split(", "))))
-    df = df.sort_values("score", ascending=False).reset_index(drop=True)
-    idx = st.session_state.recommend_index
-    if idx >= len(df):
-        st.warning("추천할 사람이 더 없어 😥"); return
-    row = df.iloc[idx]
-    st.subheader(row["name"])
-    st.write("공감했던 이야기:", st.session_state.reason_story or "—")
-    st.write("네 태그:", ", ".join(st.session_state.final_tags) or "—")
-    st.write("감정 좌표:", st.session_state.emotion)
-    if st.button("다른 사람도 볼래"):
-        st.session_state.recommend_index += 1
-        st.experimental_rerun()
-
-# 7) 라우터
-pages = {
-    "landing":    landing,
-    "name":       page_name,
-    "encourage":  page_encourage,
-    "why":        page_why,
-    "emotion":    page_emotion,
-    "recommend":  page_recommend,
-}
-pages[st.session_state.page]()
+    y = st.slider("감정 방향성 (1=이성, 9=감성
