@@ -76,3 +76,32 @@ elif st.session_state.page == 2:
     with col3:
         if st.button("나중에 다시 올게요"):
             st.warning("언제든 괜찮아요. 당신의 결이 빛날 그때 다시 만나요.")
+
+# 3️⃣ 페이지 3: 이름/별명 입력
+elif st.session_state.page == 3:
+    st.markdown("### 당신을 부를 수 있게 해주세요")
+    st.markdown('''
+    어린왕자 이야기를 아시나요?  
+    여우는 말합니다. "너는 아직 내게 수많은 사람 중 하나일 뿐이야.  
+    하지만 네가 나를 길들인다면, 나는 너에게 세상에 하나뿐인 존재가 될 거야."  
+    
+    누군가의 이름을 부르고, 기억하고, 마음에 담는 건 그런 의미예요.  
+    이제, 당신을 부를 수 있게 해줄 이름이나 별명을 알려주세요.  
+    그게 우리 여정의 첫 걸음이 될 거예요.
+    ''')
+
+    name = st.text_input("당신의 이름 또는 별명")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("다음 항목"):
+            if name.strip():
+                st.session_state.username = name
+                st.session_state.page = 4
+                st.experimental_rerun()
+            else:
+                st.warning("이름을 입력해 주세요!")
+    with col2:
+        if st.button("돌아가기"):
+            st.session_state.page = 2
+            st.experimental_rerun()
