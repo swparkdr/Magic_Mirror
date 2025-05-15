@@ -188,7 +188,7 @@ elif st.session_state.page == 5:
     st.markdown(f"<div style='color: #444; font-size: 16px;'>{desc}</div>", unsafe_allow_html=True)
 
     # 결 스타일 사분면 시각화
-    import matplotlib.pyplot as plt
+   import matplotlib.pyplot as plt
 
     # 사용자 좌표
     x = intro_extro
@@ -198,6 +198,7 @@ elif st.session_state.page == 5:
     plt.rcParams['font.family'] = 'Apple SD Gothic Neo'  # Pretendard 대체 가능
     
     fig, ax = plt.subplots(figsize=(5, 5))
+    fig.patch.set_facecolor('#fdf9f5')  # 전체 배경: 연한 베이지
     
     # 사분면 배경색 (파스텔 계열)
     ax.fill_between([0,5], 0,5, color='#e6f0ff', alpha=0.2)     # 좌하
@@ -217,6 +218,9 @@ elif st.session_state.page == 5:
     ax.set_ylim(0.5, 9.5)
     ax.set_xticks([1, 3, 5, 7, 9])
     ax.set_yticks([1, 3, 5, 7, 9])
+    ax.set_xlabel("내향  ←   →  외향", fontsize=11, labelpad=10)
+    ax.set_ylabel("배려  ←   →  표현", fontsize=11, labelpad=10)
+    ax.set_title("당신의 감정 성향", fontsize=13, pad=15)
     
     # 눈금 및 격자 제거
     ax.tick_params(labelsize=9)
