@@ -190,32 +190,44 @@ elif st.session_state.page == 5:
     # 결 스타일 사분면 시각화
     import matplotlib.pyplot as plt
 
-    fig, ax = plt.subplots(figsize=(4.5, 4.5))
+    # 사용자 좌표
+    x = intro_extro
+    y = care_express
+    
+    # 전체 스타일 조정
+    plt.rcParams['font.family'] = 'Apple SD Gothic Neo'  # Pretendard 대체 가능
+    
+    fig, ax = plt.subplots(figsize=(5, 5))
+    fig.patch.set_facecolor('#fdf9f5')  # 전체 배경: 연한 베이지
+    
+    # 사분면 배경색 (파스텔 계열)
+    ax.fill_between([0,5], 0,5, color='#e6f0ff', alpha=0.2)     # 좌하
+    ax.fill_between([5,9.5], 0,5, color='#fff0f5', alpha=0.2)   # 우하
+    ax.fill_between([0,5], 5,9.5, color='#f0fff0', alpha=0.2)   # 좌상
+    ax.fill_between([5,9.5], 5,9.5, color='#fffbe6', alpha=0.2) # 우상
+    
+    # 축 (중앙 점선)
+    ax.axhline(y=5, color='gray', linestyle='--', linewidth=1, alpha=0.4)
+    ax.axvline(x=5, color='gray', linestyle='--', linewidth=1, alpha=0.4)
+    
+    # 사용자 좌표 표시 (하트 마커)
+    ax.scatter(x, y, s=200, color='crimson', marker='$❤$')
+    
+    # 축 설정
     ax.set_xlim(0.5, 9.5)
     ax.set_ylim(0.5, 9.5)
-
-    # 배경 사분면 색
-    ax.fill_between([0,5], 0,5, color='#e6f0ff', alpha=0.2)
-    ax.fill_between([5,9.5], 0,5, color='#fff0f5', alpha=0.2)
-    ax.fill_between([0,5], 5,9.5, color='#f0fff0', alpha=0.2)
-    ax.fill_between([5,9.5], 5,9.5, color='#fffbe6', alpha=0.2)
-
-    # 기준선
-    ax.axhline(y=5, color='gray', linewidth=1)
-    ax.axvline(x=5, color='gray', linewidth=1)
-
-    # 사용자 좌표 점
-    ax.scatter(intro_extro, care_express, color='crimson', s=150)
-
-    # 축 라벨
-    ax.set_xticks([1,3,5,7,9])
-    ax.set_yticks([1,3,5,7,9])
-    ax.set_xlabel("내향  ↔  외향", fontsize=11)
-    ax.set_ylabel("배려  ↔  표현", fontsize=11)
-
+    ax.set_xticks([1, 3, 5, 7, 9])
+    ax.set_yticks([1, 3, 5, 7, 9])
+    ax.set_xlabel("내향  ←   →  외향", fontsize=11, labelpad=10)
+    ax.set_ylabel("배려  ←   →  표현", fontsize=11, labelpad=10)
     ax.set_title("당신의 감정 성향", fontsize=13, pad=15)
+    
+    # 눈금 및 격자 제거
+    ax.tick_params(labelsize=9)
     ax.grid(False)
     ax.set_facecolor("white")
+    
+    # Streamlit에 출력
     st.pyplot(fig)
 
     # 버튼
