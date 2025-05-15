@@ -154,12 +154,70 @@ elif st.session_state.page == 4:
         if st.button("이전으로"):
             st.session_state.page = 3
 
-# 페이지 5️⃣: 성향 슬라이더
+# 페이지 5️⃣: 성향 슬라이더 + 사분면 해석 + 결 스타일 시각화
 elif st.session_state.page == 5:
     render_logo()
+
     st.markdown(f"### {st.session_state.username}님에 대해 조금 더 알려주세요")
+    st.markdown("우리가 감정을 맺을 때, 단순한 감정만 있는 건 아니에요.  
+    그 사람의 말투, 속도, 표현 방식, 감정의 결이 함께 어우러져요.  
+    그러니 이번엔 당신의 성향을 조금만 알려줄래요?")
+
     intro_extro = st.slider("나는 더 내향적인가요, 외향적인가요?", 1, 9, 5)
     care_express = st.slider("나는 배려 중심인가요, 자기표현 중심인가요?", 1, 9, 5)
+
+    # 사분면 포지션 판별
+    if intro_extro <= 4 and care_express <= 4:
+        profile = "조용한 공감형"
+        desc = "말보다는 분위기와 눈빛으로 사람을 읽는 타입이에요. 친밀해지면 깊은 결을 맺어요."
+    elif intro_extro >= 6 and care_express <= 4:
+        profile = "외향적 공감형"
+        desc = "밝고 사교적이지만, 타인을 세심하게 챙기려는 성향도 함께 있어요."
+    elif intro_extro <= 4 and care_express >= 6:
+        profile = "섬세한 표현형"
+        desc = "내면의 감정을 조심스럽게 표현하지만, 그 속엔 풍부한 감정이 흐르고 있어요."
+    elif intro_extro >= 6 and care_express >= 6:
+        profile = "강한 자기표현형"
+        desc = "감정도, 생각도, 표현도 진하게 드러내는 타입이에요. 관계 속에서 주도적이에요."
+    else:
+        profile = "균형 잡힌 사람"
+        desc = "어느 쪽에도 완전히 기울지 않은, 균형 있는 성향이에요."
+
+    st.markdown(f"#### 당신은 **{profile}**이에요.")
+    st.markdown(f"<div style='color: #444; font-size: 16px;'>{desc}</div>", unsafe_allow_html=True)
+
+    # 결 스타일 사분면 시각화
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(4.5, 4.5))
+    ax.set_xlim(0.5, 9.5)
+    ax.set_ylim(0.5, 9.5)
+
+    # 배경 사분면 색
+    ax.fill_between([0,5], 0,5, color='#e6f0ff', alpha=0.2)
+    ax.fill_between([5,9.5], 0,5, color='#fff0f5', alpha=0.2)
+    ax.fill_between([0,5], 5,9.5, color='#f0fff0', alpha=0.2)
+    ax.fill_between([5,9.5], 5,9.5, color='#fffbe6', alpha=0.2)
+
+    # 기준선
+    ax.axhline(y=5, color='gray', linewidth=1)
+    ax.axvline(x=5, color='gray', linewidth=1)
+
+    # 사용자 좌표 점
+    ax.scatter(intro_extro, care_express, color='crimson', s=150)
+
+    # 축 라벨
+    ax.set_xticks([1,3,5,7,9])
+    ax.set_yticks([1,3,5,7,9])
+    ax.set_xlabel("내향  ↔  외향", fontsize=11)
+    ax.set_ylabel("배려  ↔  표현", fontsize=11)
+
+    ax.set_title("당신의 감정 성향", fontsize=13, pad=15)
+    ax.grid(False)
+    ax.set_facecolor("white")
+    st.pyplot(fig)
+
+    # 버튼
     col1, col2 = st.columns(2)
     with col1:
         if st.button("다음으로 넘어갈게요"):
