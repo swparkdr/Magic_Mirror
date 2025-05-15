@@ -9,20 +9,20 @@ st.set_page_config(page_title="결(結)", layout="centered")
 # 버튼 설정
 st.markdown("""
 <style>
-div.stButton > button {
-    background-color: #b9aee0;
-    color: white;
-    font-size: 16px;
-    font-family: 'Pretendard', sans-serif;
-    border-radius: 12px;
-    padding: 0.6em 1.4em;
-    border: none;
-    transition: all 0.2s ease;
-    box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+button[kind="primary"] {
+    background-color: #b9aee0 !important;
+    color: white !important;
+    font-size: 16px !important;
+    font-family: 'Pretendard', sans-serif !important;
+    border-radius: 12px !important;
+    padding: 0.6em 1.4em !important;
+    border: none !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.1) !important;
 }
 
-div.stButton > button:hover {
-    background-color: #a493dc;
+button[kind="primary"]:hover {
+    background-color: #a493dc !important;
     transform: scale(1.03);
 }
 </style>
