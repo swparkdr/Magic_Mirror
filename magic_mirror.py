@@ -23,7 +23,7 @@ st.markdown(page_bg_img, unsafe_allow_html=True)
 # 공통 로고 함수 (중앙 정렬된 헤더용)
 def render_logo():
     st.markdown('''
-    <div style="width: 100%; text-align: center; margin-top: 10px; margin-bottom: 20px;">
+    <div style="width: 100%; text-align: center; margin-top: 10px; margin-bottom: 5px;">
         <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="120">
     </div>
     ''', unsafe_allow_html=True)
