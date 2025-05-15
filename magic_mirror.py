@@ -213,8 +213,9 @@ elif st.session_state.page == 7:
             </div>
             """, unsafe_allow_html=True)
             st.markdown("---")
-            st.markdown(f"**{username}**, 당신의 감정은 정말 소중해요.  
-이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.")
+            st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
+            이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
+
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("다시 해볼래"):
