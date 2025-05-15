@@ -198,7 +198,6 @@ elif st.session_state.page == 5:
     plt.rcParams['font.family'] = 'Apple SD Gothic Neo'  # Pretendard 대체 가능
     
     fig, ax = plt.subplots(figsize=(5, 5))
-    fig.patch.set_facecolor('#fdf9f5')  # 전체 배경: 연한 베이지
     
     # 사분면 배경색 (파스텔 계열)
     ax.fill_between([0,5], 0,5, color='#e6f0ff', alpha=0.2)     # 좌하
