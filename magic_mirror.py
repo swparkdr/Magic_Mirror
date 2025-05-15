@@ -42,7 +42,7 @@ if st.session_state.page == 1:
 
     # 슬로건
     st.markdown('''
-        <div style="text-align: center; margin-top: 30px;">
+        <div style="text-align: center; margin-top: 10px;">
             <div style="font-size: 18px; color: #555; font-family: 'Pretendard', sans-serif;">
                 너의 결, 그리고 나의 결.
             </div>
@@ -53,7 +53,6 @@ if st.session_state.page == 1:
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # 페이지 2️⃣: 결 소개 + 선택
 elif st.session_state.page == 2:
