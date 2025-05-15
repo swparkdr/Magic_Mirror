@@ -218,9 +218,6 @@ elif st.session_state.page == 5:
     ax.set_ylim(0.5, 9.5)
     ax.set_xticks([1, 3, 5, 7, 9])
     ax.set_yticks([1, 3, 5, 7, 9])
-    ax.set_xlabel("내향  ←   →  외향", fontsize=11, labelpad=10)
-    ax.set_ylabel("배려  ←   →  표현", fontsize=11, labelpad=10)
-    ax.set_title("당신의 감정 성향", fontsize=13, pad=15)
     
     # 눈금 및 격자 제거
     ax.tick_params(labelsize=9)
