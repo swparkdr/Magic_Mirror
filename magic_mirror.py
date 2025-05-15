@@ -11,7 +11,7 @@ st.set_page_config(page_title="결(結)", layout="centered")
 # 커스텀 버튼 스타일 정의
 st.markdown("""
 <style>
-.custom-btn {
+div.stButton > button {
     background-color: #b9aee0;
     color: white;
     font-size: 16px;
@@ -23,9 +23,8 @@ st.markdown("""
     transition: all 0.2s ease;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     margin: 10px;
-    display: inline-block;
 }
-.custom-btn:hover {
+div.stButton > button:hover {
     background-color: #a493dc;
     transform: scale(1.03);
 }
@@ -316,7 +315,7 @@ elif st.session_state.page == 7:
 
     if not name:
         st.error("선택된 페르소나가 없어요. 이전 단계로 돌아가주세요.")
-        if st.button("돌아가기", key="go_back_6"):
+        if st.button("돌아가기"):
             st.session_state.page = 6
             st.stop()
     else:
@@ -347,9 +346,9 @@ elif st.session_state.page == 7:
 
             col1, col2 = st.columns(2)
             with col1:
-                if st.button("다시 해볼래", key="go_restart"):
+                if st.button("다시 해볼래"):
                     st.session_state.page = 1
                     st.stop()
             with col2:
-                if st.button("내 결 저장하기", key="go_save"):
+                if st.button("내 결 저장하기"):
                     st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
