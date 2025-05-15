@@ -46,10 +46,6 @@ if st.session_state.page == 1:
         st.session_state.page = 2
     st.markdown("</div>", unsafe_allow_html=True)
 
-# 페이지 2️⃣ 이후에 공통 로고 표시
-elif st.session_state.page >= 2:
-    render_logo()
-
 # 페이지 2️⃣: 결 소개 + 선택
 if st.session_state.page == 2:
     st.markdown("### 결(結)이 전하고 싶은 이야기")
