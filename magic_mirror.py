@@ -158,10 +158,11 @@ elif st.session_state.page == 4:
 elif st.session_state.page == 5:
     render_logo()
 
-    st.markdown(f"### {st.session_state.username}님에 대해 조금 더 알려주세요")
-    st.markdown("우리가 감정을 맺을 때, 단순한 감정만 있는 건 아니에요.  
+    st.markdown('''
+    우리가 감정을 맺을 때, 단순한 감정만 있는 건 아니에요.  
     그 사람의 말투, 속도, 표현 방식, 감정의 결이 함께 어우러져요.  
-    그러니 이번엔 당신의 성향을 조금만 알려줄래요?")
+    그러니 이번엔 당신의 성향을 조금만 알려줄래요?
+    ''')
 
     intro_extro = st.slider("나는 더 내향적인가요, 외향적인가요?", 1, 9, 5)
     care_express = st.slider("나는 배려 중심인가요, 자기표현 중심인가요?", 1, 9, 5)
