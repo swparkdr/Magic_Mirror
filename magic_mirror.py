@@ -32,6 +32,8 @@ if 'page' not in st.session_state:
 
 
 # 페이지 1️⃣: 인트로 + 슬로건
+elif st.session_state.page == 1:
+    render_logo()
 if st.session_state.page == 1:
     st.markdown('''
         <div style="text-align: center; margin-top: 30vh;">
@@ -47,6 +49,8 @@ if st.session_state.page == 1:
     st.markdown("</div>", unsafe_allow_html=True)
 
 # 페이지 2️⃣: 결 소개 + 선택
+elif st.session_state.page == 2:
+    render_logo()
 if st.session_state.page == 2:
     st.markdown("### 결(結)이 전하고 싶은 이야기")
     st.markdown('''
