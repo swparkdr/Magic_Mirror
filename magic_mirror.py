@@ -36,7 +36,7 @@ if st.session_state.page == 1:
     # 1페이지 전용 로고: 더 크게, 중앙 정렬
     st.markdown('''
     <div style="width: 100%; text-align: center; margin-top: 10vh; margin-bottom: 30px;">
-        <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="200">
+        <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="400">
     </div>
     ''', unsafe_allow_html=True)
 
@@ -53,7 +53,6 @@ if st.session_state.page == 1:
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
-        st.experimental_rerun()  # 페이지 전환 즉시 적용 (선택사항: 없애도 됨)
     st.markdown("</div>", unsafe_allow_html=True)
 
 # 페이지 2️⃣: 결 소개 + 선택
