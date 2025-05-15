@@ -283,7 +283,6 @@ elif st.session_state.page == 6:
 
 # 페이지 7️⃣: 감정 스토리
 elif st.session_state.page == 7:
-    render_logo()
     name = st.session_state.get("selected_persona", None)
     username = st.session_state.get("username", "당신")
 
@@ -295,11 +294,13 @@ elif st.session_state.page == 7:
         @st.cache_data
         def load_stories():
             df = pd.read_csv("story.csv")
-            df["name"] = df["name"].astype(str).str.strip()
+            df["persona_id"] = df["persona_id"].astype(str).str.strip()
             return df
 
         stories = load_stories()
-        story_row = stories[stories["name"] == name.strip()]
+
+        # 선택한 페르소나 id와 매칭
+        story_row = stories[stories["persona_id"] == name.strip()]
 
         if not story_row.empty:
             story_text = story_row.iloc[0]["story"]
@@ -310,9 +311,10 @@ elif st.session_state.page == 7:
             {story_text}
             </div>
             """, unsafe_allow_html=True)
+
             st.markdown("---")
             st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
-            이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
+이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
 
             col1, col2 = st.columns(2)
             with col1:
