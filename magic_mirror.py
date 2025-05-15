@@ -316,13 +316,7 @@ elif st.session_state.page == 7:
 
     if not name:
         st.error("선택된 페르소나가 없어요. 이전 단계로 돌아가주세요.")
-        st.markdown("""
-        <form action="" method="post">
-            <button name="go_back_6" class="custom-btn" type="submit">돌아가기</button>
-        </form>
-        """, unsafe_allow_html=True)
-
-        if "go_back_6" in st.session_state:
+        if st.button("돌아가기", key="go_back_6"):
             st.session_state.page = 6
             st.stop()
     else:
@@ -351,46 +345,11 @@ elif st.session_state.page == 7:
             st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
 이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
 
-            st.markdown("""
-            <form action="" method="post">
-                <button name="go_restart" class="custom-btn" type="submit">다시 해볼래</button>
-                <button name="go_save" class="custom-btn" type="submit">내 결 저장하기</button>
-            </form>
-            """, unsafe_allow_html=True)
-
-            if "go_restart" in st.session_state:
-                st.session_state.page = 1
-                st.stop()
-            elif "go_save" in st.session_state:
-                st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
-
-        story_row = stories[stories["persona_id"] == name.strip()]
-
-        if not story_row.empty:
-            story_text = story_row.iloc[0]["story"]
-            st.markdown(f"### {username}님, 이 사람의 이야기를 들어볼래요?")
-            st.markdown("#### ✧ 감정의 결을 따라온 이야기")
-            st.markdown(f"""
-            <div style='background-color: #f8f5ff; padding: 20px; border-radius: 12px; font-size: 16px; line-height: 1.7em;'>
-            {story_text}
-            </div>
-            """, unsafe_allow_html=True)
-
-            st.markdown("---")
-            st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
-이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
-
-            st.markdown("""
-            <form action="" method="post">
-                <button name="go_restart" class="custom-btn" type="submit">다시 해볼래</button>
-                <button name="go_save" class="custom-btn" type="submit">내 결 저장하기</button>
-            </form>
-            """, unsafe_allow_html=True)
-
-            if "go_restart" in st.session_state:
-                st.session_state.page = 1
-                st.stop()
-            elif "go_save" in st.session_state:
-                st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
-        else:
-            st.error("해당하는 스토리를 찾지 못했어요.")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("다시 해볼래", key="go_restart"):
+                    st.session_state.page = 1
+                    st.stop()
+            with col2:
+                if st.button("내 결 저장하기", key="go_save"):
+                    st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
