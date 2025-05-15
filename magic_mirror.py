@@ -27,6 +27,9 @@ def render_logo():
         <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="120">
     </div>
     ''', unsafe_allow_html=True)
+if 'page' not in st.session_state:
+    st.session_state.page = 1
+
 
 # 페이지 1️⃣: 인트로 + 슬로건
 if st.session_state.page == 1:
