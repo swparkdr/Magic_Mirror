@@ -126,6 +126,7 @@ elif st.session_state.page == 3:
 
 # 페이지 4️⃣: 감정 슬라이더
 elif st.session_state.page == 4:
+    render_logo()
     st.markdown(f"### {st.session_state.username}님, 지금의 감정을 잠깐만 들여다볼까요?")
     x = st.slider("감정의 강도 (고요 ↔ 격렬)", 1, 9, 5)
     y = st.slider("감정의 방향 (우울 ↔ 희망)", 1, 9, 5)
@@ -155,6 +156,7 @@ elif st.session_state.page == 4:
 
 # 페이지 5️⃣: 성향 슬라이더
 elif st.session_state.page == 5:
+    render_logo()
     st.markdown(f"### {st.session_state.username}님에 대해 조금 더 알려주세요")
     intro_extro = st.slider("나는 더 내향적인가요, 외향적인가요?", 1, 9, 5)
     care_express = st.slider("나는 배려 중심인가요, 자기표현 중심인가요?", 1, 9, 5)
@@ -170,6 +172,7 @@ elif st.session_state.page == 5:
 
 # 페이지 6️⃣: 페르소나 추천
 elif st.session_state.page == 6:
+    render_logo()
     st.markdown(f"### {st.session_state.username}님과 비슷한 감정의 사람들을 찾아봤어요.")
     st.markdown("이 감정의 결을 닮은 사람들을 데려왔어. 누구와 지금 감정을 함께 나누고 싶어?")
     user_tags = st.session_state.feeling_tags
@@ -212,6 +215,7 @@ elif st.session_state.page == 6:
 
 # 페이지 7️⃣: 감정 스토리
 elif st.session_state.page == 7:
+    render_logo()
     name = st.session_state.get("selected_persona", None)
     username = st.session_state.get("username", "당신")
 
