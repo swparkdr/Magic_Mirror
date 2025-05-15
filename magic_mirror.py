@@ -35,7 +35,7 @@ if 'page' not in st.session_state:
 if st.session_state.page == 1:
     # 1페이지 전용 로고: 더 크게, 중앙 정렬
     st.markdown('''
-    <div style="width: 100%; text-align: center; margin-top: 10vh; margin-bottom: 30px;">
+    <div style="width: 100%; text-align: center; margin-top: 10vh; margin-bottom: 10px;">
         <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="400">
     </div>
     ''', unsafe_allow_html=True)
