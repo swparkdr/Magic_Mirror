@@ -6,6 +6,28 @@ from sklearn.feature_extraction.text import CountVectorizer
 # 페이지 설정
 st.set_page_config(page_title="결(結)", layout="centered")
 
+# 버튼 설정
+st.markdown("""
+<style>
+div.stButton > button {
+    background-color: #b9aee0;
+    color: white;
+    font-size: 16px;
+    font-family: 'Pretendard', sans-serif;
+    border-radius: 12px;
+    padding: 0.6em 1.4em;
+    border: none;
+    transition: all 0.2s ease;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.1);
+}
+
+div.stButton > button:hover {
+    background-color: #a493dc;
+    transform: scale(1.03);
+}
+</style>
+""", unsafe_allow_html=True)
+
 # 배경 이미지 설정
 page_bg_img = '''
 <style>
