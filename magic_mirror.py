@@ -188,7 +188,7 @@ elif st.session_state.page == 5:
     st.markdown(f"<div style='color: #444; font-size: 16px;'>{desc}</div>", unsafe_allow_html=True)
 
     # 결 스타일 사분면 시각화
-   import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
     # 사용자 좌표
     x = intro_extro
