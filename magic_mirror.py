@@ -311,7 +311,7 @@ elif st.session_state.page == 6:
 # 페이지 7️⃣: 감정 스토리
 elif st.session_state.page == 7:
     render_logo()
-    name = st.session_state.get("selected_persona", None)
+    name = str(st.session_state.get("selected_persona", "")).strip()
     username = st.session_state.get("username", "당신")
 
     if not name:
@@ -333,6 +333,37 @@ elif st.session_state.page == 7:
             return df
 
         stories = load_stories()
+        story_row = stories[stories["persona_id"] == name]
+
+        if story_row.empty:
+            st.error("해당하는 스토리를 찾지 못했어요.")
+        else:
+            story_text = story_row.iloc[0]["story"]
+            st.markdown(f"### {username}님, 이 사람의 이야기를 들어볼래요?")
+            st.markdown("#### ✧ 감정의 결을 따라온 이야기")
+            st.markdown(f"""
+            <div style='background-color: #f8f5ff; padding: 20px; border-radius: 12px; font-size: 16px; line-height: 1.7em;'>
+            {story_text}
+            </div>
+            """, unsafe_allow_html=True)
+
+            st.markdown("---")
+            st.markdown(f"""**{username}**, 당신의 감정은 정말 소중해요.  
+이 이야기가 조금이라도 위로가 되었다면, 그것만으로 충분해요.""")
+
+            st.markdown("""
+            <form action="" method="post">
+                <button name="go_restart" class="custom-btn" type="submit">다시 해볼래</button>
+                <button name="go_save" class="custom-btn" type="submit">내 결 저장하기</button>
+            </form>
+            """, unsafe_allow_html=True)
+
+            if "go_restart" in st.session_state:
+                st.session_state.page = 1
+                st.stop()
+            elif "go_save" in st.session_state:
+                st.success("아직 구현 중이지만, 곧 당신의 감정 기록을 저장할 수 있게 될 거예요.")
+
         story_row = stories[stories["persona_id"] == name.strip()]
 
         if not story_row.empty:
