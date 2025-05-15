@@ -20,12 +20,13 @@ page_bg_img = '''
 '''
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# 공통 로고 함수
+# 공통 로고 함수 (중앙 정렬된 헤더용)
 def render_logo():
-    st.image("https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png", width=100)
-
-if 'page' not in st.session_state:
-    st.session_state.page = 1
+    st.markdown('''
+    <div style="width: 100%; text-align: center; margin-top: 10px; margin-bottom: 20px;">
+        <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="120">
+    </div>
+    ''', unsafe_allow_html=True)
 
 # 페이지 1️⃣: 인트로 + 슬로건
 if st.session_state.page == 1:
@@ -81,16 +82,31 @@ if st.session_state.page == 2:
         if st.button("나중에 다시 올게요"):
             st.warning("언제든 괜찮아요. 당신의 결이 빛날 그때 다시 만나요.")
 
-# 페이지 3️⃣: 이름/별명 입력
+# 페이지 3️⃣: 이름/별명 입력 + 어린왕자 서사 강조
 elif st.session_state.page == 3:
+    render_logo()
+
     st.markdown("### 당신을 부를 수 있게 해주세요")
+    st.markdown('''
+    우리는 '결'을 맺기 전, 서로를 바라보고 이름을 부르는 것부터 시작해요.  
+    **어린왕자** 속 여우는 말하죠.  
+    _"너는 아직 내게 수많은 사람 중 하나일 뿐이야.  
+    하지만 네가 나를 길들인다면, 나는 너에게 세상에 하나뿐인 존재가 될 거야."_
+
+    누군가의 이름을 알고, 부르고, 기억하는 건 단순한 정보가 아니야.  
+    그것은 **존중**이고 **연결**이고, 그 사람과의 고유한 **결**을 만드는 시작이야.
+
+    그러니, 너의 결을 시작할 수 있도록  
+    **당신의 이름 또는 별명을 알려줄 수 있을까요?**
+    ''')
+
     name = st.text_input("당신의 이름 또는 별명")
-    if name.strip():
-        st.session_state.username = name
+
     col1, col2 = st.columns(2)
     with col1:
         if st.button("다음 항목"):
             if name.strip():
+                st.session_state.username = name
                 st.session_state.page = 4
             else:
                 st.warning("이름을 입력해 주세요!")
