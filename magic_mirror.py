@@ -35,18 +35,18 @@ if 'page' not in st.session_state:
 if st.session_state.page == 1:
     # 1페이지 전용 로고: 더 크게, 중앙 정렬
     st.markdown('''
-    <div style="width: 100%; text-align: center; margin-top: 10vh; margin-bottom: 10px;">
+    <div style="width: 100%; text-align: center; margin-top: 5vh; margin-bottom: 5px;">
         <img src="https://raw.githubusercontent.com/swparkdr/Magic_Mirror/main/logo.png" width="400">
     </div>
     ''', unsafe_allow_html=True)
 
     # 슬로건
     st.markdown('''
-        <div style="text-align: center; margin-top: 10px;">
-            <div style="font-size: 18px; color: #555; font-family: 'Pretendard', sans-serif;">
-                너의 결, 그리고 나의 결.
-            </div>
+    <div style="text-align: center; margin-top: 0;">
+        <div style="font-size: 18px; color: #555; font-family: 'Pretendard', sans-serif;">
+            너의 결, 그리고 나의 결.
         </div>
+    </div>
     ''', unsafe_allow_html=True)
 
     # 시작하기 버튼
