@@ -53,7 +53,7 @@ if st.session_state.page == 1:
     st.markdown("<div style='text-align: center; margin-top: 50px;'>", unsafe_allow_html=True)
     if st.button("시작하기"):
         st.session_state.page = 2
-        st.experimental_rerun()
+        st.stop()
         
 # 페이지 2️⃣: 결 소개 + 선택
 elif st.session_state.page == 2:
